@@ -17,6 +17,7 @@ EventLinks = Marionette.CollectionView.extend
 	childView: LinkView
 
 App.addInitializer (options) ->
+
 	ev = new Event options.event
 	# console.log ev.attributes
 

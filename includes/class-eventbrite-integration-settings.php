@@ -191,6 +191,14 @@ class Eventbrite_Integration_Settings {
 					'placeholder'	=> __( 'Nearby Tag ID', 'eventbrite-integration' )
 				),
 				array(
+					'id' 			=> 'event_details_tag_id',
+					'label'			=> __( 'Event Details Tag ID' , 'eventbrite-integration' ),
+					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event details', 'eventbrite-integration' ),
+					'type'			=> 'text',
+					'default'		=> '#eventbrite-event-details',
+					'placeholder'	=> __( 'Event Details Tag ID', 'eventbrite-integration' )
+				),
+				array(
 					'id' 			=> 'event_template',
 					'label'			=> __( 'Event Template' , 'eventbrite-integration' ),
 					'description'	=> __( 'This will define the template to be used with the event lists', 'eventbrite-integration' ),
@@ -207,7 +215,7 @@ class Eventbrite_Integration_Settings {
 											"\t</span>\n" .
 										"</a>",
 					'placeholder'	=> __( 'Placeholder text for this textarea', 'eventbrite-integration' )
-				)
+				),
 			)
 		);
 

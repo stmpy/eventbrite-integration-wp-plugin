@@ -3,8 +3,6 @@
  * Template Name: Eventbrite API: Event List
  */
 
-// require_once(dirname(bloginfo('template_url'))
-
 // load theme page
 require_once(get_template_directory() . '/page.php');
 require_once(dirname(__FILE__) . "/js-libraries.php");

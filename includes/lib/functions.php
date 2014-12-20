@@ -134,7 +134,7 @@ function eventbrite_is_single( $query = null ) {
 	}
 
 	// If the eventbrite_id query var has something, then it's an event single view.
-	elseif ( get_query_var( 'eventbrite_id' ) ) {
+	elseif ( get_query_var( get_option('evi_event_id_variable', 'event_id') ) ) {
 		return true;
 	}
 
@@ -431,3 +431,9 @@ endif;
 function eventbrite_has_active_connection() {
 	return ( Eventbrite_Requirements::has_active_connection() );
 }
+
+function add_query_vars($aVars) {
+	$aVars[] = get_option('evi_event_id_variable', 'event_id');
+	return $aVars;
+}
+add_filter('query_vars','add_query_vars');
