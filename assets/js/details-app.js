@@ -26,8 +26,8 @@ EventLinks = Marionette.CollectionView.extend({
 
 App.addInitializer(function(options) {
   var ev;
-  ev = new Event(options);
-  if (_.isEmpty(options.ID)) {
+  ev = new Event(options.event);
+  if (_.isEmpty(options.event.ID)) {
     window.location.reload();
   }
   jQuery('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('venue').address.city + ", " + ev.get('venue').address.region);

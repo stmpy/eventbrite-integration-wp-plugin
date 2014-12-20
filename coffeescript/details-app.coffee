@@ -17,10 +17,10 @@ EventLinks = Marionette.CollectionView.extend
 	childView: LinkView
 
 App.addInitializer (options) ->
-	ev = new Event options
+	ev = new Event options.event
 	# console.log ev.attributes
 
-	window.location.reload() if _.isEmpty(options.ID)
+	window.location.reload() if _.isEmpty(options.event.ID)
 
 	# Set header for event
 	jQuery('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('venue').address.city + ", " +ev.get('venue').address.region)
