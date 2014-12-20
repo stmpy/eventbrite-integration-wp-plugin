@@ -1,4 +1,4 @@
-var App, CategoryLayout, ColumnLayout, Controller, Event, EventView, Events, MapLayout, Tab, TabView, Tabs, TabsView, ThirdColumnView;
+var App, CategoryLayout, ColumnLayout, Event, EventView, Events, MapLayout, Tab, Tabs, ThirdColumnView;
 
 App = new Marionette.Application({
   regions: {
@@ -8,10 +8,7 @@ App = new Marionette.Application({
 
 Event = Backbone.Model.extend({
   initialize: function() {
-    console.log('initing a model');
-    console.log(this.attributes);
-    this.set('local_url', '/' + App.ops.evi_event_detail_page + '/?' + App.ops.evi_event_id_variable + '=' + this.get('ID'));
-    return console.log(this.get('local_url'));
+    return this.set('local_url', '/' + App.ops.evi_event_detail_page + '/?' + App.ops.evi_event_id_variable + '=' + this.get('ID'));
   }
 });
 
@@ -23,47 +20,6 @@ Tab = Backbone.Model.extend({});
 
 Tabs = Backbone.Collection.extend({
   model: Tab
-});
-
-TabView = Marionette.ItemView.extend({});
-
-TabsView = Marionette.CollectionView.extend({
-  events: {
-    'click li > a': 'ohHell'
-  },
-  ohHell: function(event) {
-    var tab;
-    tab = this.collection.findWhere({
-      tab_id: this.$(event.currentTarget).attr('href')
-    });
-    if (tab.get('activated')) {
-      return;
-    }
-    tab.set('activated', true);
-    return App.controller[tab.get('param')]();
-  },
-  initialize: function() {
-    var self;
-    self = this;
-    return this.$el.find('li > a').each(function(i, el) {
-      var $content, $tab, action, eventbrite, param, region, tab, _ref;
-      $tab = self.$(el);
-      $content = self.$($tab.attr('href')).find('[id^=eventbrite]');
-      _ref = $content.attr('id').split('-', 3), eventbrite = _ref[0], action = _ref[1], param = _ref[2];
-      tab = new Tab({
-        name: $tab.html(),
-        tab_id: $tab.attr('href'),
-        action: action,
-        param: param,
-        content: $content.attr('id'),
-        activated: false
-      });
-      self.collection.add(tab);
-      region = {};
-      region[tab.get('param')] = '#' + tab.get('content');
-      return App.addRegions(region);
-    });
-  }
 });
 
 EventView = Marionette.ItemView.extend({
@@ -168,8 +124,16 @@ MapLayout = Marionette.LayoutView.extend({
       this.map.setMapTypeId('map_style');
     }
     this._geoLocate();
-    return this.getOption('evnts').each(function(event) {
+    this.getOption('evnts').each(function(event) {
       return self.drawMarker(new google.maps.LatLng(parseFloat(event.get('venue').latitude), parseFloat(event.get('venue').longitude)));
+    });
+    google.maps.event.addListenerOnce(this.map, 'tilesloaded', function() {
+      return google.maps.event.addListenerOnce(self.map, 'tilesloaded', function() {
+        return google.maps.event.trigger(self.map, 'resize');
+      });
+    });
+    return google.maps.event.addListenerOnce(this.map, 'resize', function() {
+      return self._geoLocate();
     });
   },
   drawMarker: function(location) {
@@ -209,35 +173,18 @@ MapLayout = Marionette.LayoutView.extend({
   }
 });
 
-Controller = Marionette.Controller.extend({
-  upcoming: function() {
-    var grouped_byDate;
-    grouped_byDate = App.events['byDate'].groupBy(function(ev, i) {
-      return moment(ev.get('start').local).format("MMMM YYYY");
-    });
-    return App.upcoming.show(new CategoryLayout({
-      categories: grouped_byDate
-    }));
-  },
-  alphabetical: function() {
-    var grouped_byCity;
-    grouped_byCity = App.events['byDate'].groupBy(function(ev, i) {
-      return ev.get('venue').address.city.substr(0, 1);
-    });
-    return App.alphabetical.show(new CategoryLayout({
-      categories: grouped_byCity
-    }));
-  },
-  nearby: function() {
-    return App.nearby.show(new MapLayout({
-      evnts: App.events['noSort']
-    }));
-  }
-});
-
 App.addInitializer(function(options) {
-  var events;
+  var events, grouped_byCity, grouped_byDate, r, region, _i, _len, _ref;
   this.ops = options;
+  r = {};
+  _ref = ['upcoming', 'alphabetical', 'nearby'];
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    region = _ref[_i];
+    if (jQuery(options['evi_' + region + '_tag_id']).length > 0) {
+      r[region] = options['evi_' + region + '_tag_id'];
+    }
+  }
+  this.addRegions(r);
   events = _.filter(options.events, function(ev) {
     return ev.organizer.id === options.evi_organizer_id;
   });
@@ -245,14 +192,44 @@ App.addInitializer(function(options) {
     byDate: new Events(_.sortBy(events, function(ev) {
       return ev.start.local;
     })),
-    byCity: new Events(_.sortBy(events, function(ev) {
-      return -ev.venue.address.city.substr(0, 1);
-    })),
+    byCity: new Events((_.sortBy(events, function(ev) {
+      var att, v, _j, _len1, _ref1;
+      att = ev;
+      _ref1 = options.evi_alphabetical_event_attribute.split('.');
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        v = _ref1[_j];
+        att = att[v];
+      }
+      return att.substr(0, 1);
+    })).reverse()),
     noSort: new Events(events)
   };
-  this.controller = new Controller;
-  return new TabsView({
-    el: '.tabbed',
-    collection: new Tabs
+  grouped_byDate = this.events['byDate'].groupBy(function(ev, i) {
+    return moment(ev.get('start').local).format("MMMM YYYY");
   });
+  if (this.upcoming) {
+    this.upcoming.show(new CategoryLayout({
+      categories: grouped_byDate
+    }));
+  }
+  grouped_byCity = this.events['byCity'].groupBy(function(ev, i) {
+    var att, v, _j, _len1, _ref1;
+    att = ev.attributes;
+    _ref1 = options.evi_alphabetical_event_attribute.split('.');
+    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+      v = _ref1[_j];
+      att = att[v];
+    }
+    return att;
+  });
+  if (this.alphabetical) {
+    this.alphabetical.show(new CategoryLayout({
+      categories: grouped_byCity
+    }));
+  }
+  if (this.nearby) {
+    return this.nearby.show(new MapLayout({
+      evnts: this.events['noSort']
+    }));
+  }
 });

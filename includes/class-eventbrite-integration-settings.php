@@ -163,7 +163,7 @@ class Eventbrite_Integration_Settings {
 					'label'			=> __( 'Upcoming Tag ID' , 'eventbrite-integration' ),
 					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert the event list categorized by the event start date', 'eventbrite-integration' ),
 					'type'			=> 'text',
-					'default'		=> 'eventbrite-sort-upcoming',
+					'default'		=> '#eventbrite-sort-upcoming',
 					'placeholder'	=> __( 'Upcoming Tag ID', 'eventbrite-integration' )
 				),
 				array(
@@ -171,7 +171,7 @@ class Eventbrite_Integration_Settings {
 					'label'			=> __( 'Alphabetical Tag ID' , 'eventbrite-integration' ),
 					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert the event list categorized by the name of an event attribute', 'eventbrite-integration' ),
 					'type'			=> 'text',
-					'default'		=> 'eventbrite-sort-alphabetical',
+					'default'		=> '#eventbrite-sort-alphabetical',
 					'placeholder'	=> __( 'Alphabetical Tag ID', 'eventbrite-integration' )
 				),
 				array(
@@ -187,7 +187,7 @@ class Eventbrite_Integration_Settings {
 					'label'			=> __( 'Nearby Tag ID' , 'eventbrite-integration' ),
 					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert a google map of the eventbrite events', 'eventbrite-integration' ),
 					'type'			=> 'text',
-					'default'		=> 'eventbrite-sort-nearby',
+					'default'		=> '#eventbrite-sort-nearby',
 					'placeholder'	=> __( 'Nearby Tag ID', 'eventbrite-integration' )
 				),
 				array(

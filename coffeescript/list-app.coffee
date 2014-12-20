@@ -3,65 +3,36 @@ App = new Marionette.Application
 		application: '.main-content'
 
 
-# ##     ##  #######  ########  ######## ##        ######  
-# ###   ### ##     ## ##     ## ##       ##       ##    ## 
-# #### #### ##     ## ##     ## ##       ##       ##       
-# ## ### ## ##     ## ##     ## ######   ##        ######  
-# ##     ## ##     ## ##     ## ##       ##             ## 
-# ##     ## ##     ## ##     ## ##       ##       ##    ## 
-# ##     ##  #######  ########  ######## ########  ######  
+# ##     ##  #######  ########  ######## ##        ######
+# ###   ### ##     ## ##     ## ##       ##       ##    ##
+# #### #### ##     ## ##     ## ##       ##       ##
+# ## ### ## ##     ## ##     ## ######   ##        ######
+# ##     ## ##     ## ##     ## ##       ##             ##
+# ##     ## ##     ## ##     ## ##       ##       ##    ##
+# ##     ##  #######  ########  ######## ########  ######
 
 
 Event = Backbone.Model.extend
 	initialize: ->
-		console.log 'initing a model'
-		console.log @attributes
 		@set 'local_url', '/' + App.ops.evi_event_detail_page + '/?' + App.ops.evi_event_id_variable + '=' + @get 'ID'
-		console.log @get 'local_url'
 Events = Backbone.Collection.extend model: Event
 
 Tab = Backbone.Model.extend {}
 Tabs = Backbone.Collection.extend model: Tab
 
 
-# ##     ## #### ######## ##      ##  ######  
-# ##     ##  ##  ##       ##  ##  ## ##    ## 
-# ##     ##  ##  ##       ##  ##  ## ##       
-# ##     ##  ##  ######   ##  ##  ##  ######  
-#  ##   ##   ##  ##       ##  ##  ##       ## 
-#   ## ##    ##  ##       ##  ##  ## ##    ## 
-#    ###    #### ########  ###  ###   ######  
-
-
-TabView = Marionette.ItemView.extend {}
-
-TabsView = Marionette.CollectionView.extend
-	events:
-		'click li > a': 'ohHell'
-	ohHell: (event) ->
-		tab = @collection.findWhere { tab_id: @$(event.currentTarget).attr('href') }
-		return if tab.get 'activated'
-		tab.set 'activated', true
-		App.controller[tab.get 'param']()
-
-	initialize: ->
-		self = this
-		@$el.find('li > a').each (i,el) ->
-			$tab = self.$(el)
-			$content = self.$($tab.attr('href')).find('[id^=eventbrite]')
-			[eventbrite, action, param] = $content.attr('id').split('-',3)
-			tab = new Tab { name: $tab.html(), tab_id: $tab.attr('href'), action: action, param: param, content: $content.attr('id'), activated: false }
-			self.collection.add tab
-			region = {}
-			region[tab.get('param')] = '#' + tab.get('content')
-			App.addRegions region
-
-	# childViewOptions: (child) ->
+# ##     ## #### ######## ##      ##  ######
+# ##     ##  ##  ##       ##  ##  ## ##    ##
+# ##     ##  ##  ##       ##  ##  ## ##
+# ##     ##  ##  ######   ##  ##  ##  ######
+#  ##   ##   ##  ##       ##  ##  ##       ##
+#   ## ##    ##  ##       ##  ##  ## ##    ##
+#    ###    #### ########  ###  ###   ######
 
 
 EventView = Marionette.ItemView.extend
 	className: 'eventbrite-event'
-	template: (model) -> 
+	template: (model) ->
 		_.template(App.ops.evi_event_template)(model)
 
 ThirdColumnView = Marionette.CollectionView.extend
@@ -69,13 +40,13 @@ ThirdColumnView = Marionette.CollectionView.extend
 	childView: EventView
 
 
-# ##          ###    ##    ##  #######  ##     ## ########  ######  
-# ##         ## ##    ##  ##  ##     ## ##     ##    ##    ##    ## 
-# ##        ##   ##    ####   ##     ## ##     ##    ##    ##       
-# ##       ##     ##    ##    ##     ## ##     ##    ##     ######  
-# ##       #########    ##    ##     ## ##     ##    ##          ## 
-# ##       ##     ##    ##    ##     ## ##     ##    ##    ##    ## 
-# ######## ##     ##    ##     #######   #######     ##     ######  
+# ##          ###    ##    ##  #######  ##     ## ########  ######
+# ##         ## ##    ##  ##  ##     ## ##     ##    ##    ##    ##
+# ##        ##   ##    ####   ##     ## ##     ##    ##    ##
+# ##       ##     ##    ##    ##     ## ##     ##    ##     ######
+# ##       #########    ##    ##     ## ##     ##    ##          ##
+# ##       ##     ##    ##    ##     ## ##     ##    ##    ##    ##
+# ######## ##     ##    ##     #######   #######     ##     ######
 
 ColumnLayout = Marionette.LayoutView.extend
 	className: 'vc_row-fluid'
@@ -100,7 +71,7 @@ CategoryLayout = Marionette.LayoutView.extend
 	onRender: ->
 		self = this
 		_.each @getOption('categories'), (group,category) ->
-			
+
 			self.$el.prepend "<div class='vc_row-fluid'><div class='vc_span12 col'><h4 class='eventbrite-category-title'>" + category + "</h4></div></div>", (new ColumnLayout column_count: 3, columns: _.groupBy group, (event,i) ->
 				(parseInt i / (group.length / 3))).render().el
 
@@ -136,11 +107,18 @@ MapLayout = Marionette.LayoutView.extend
 			@map.setMapTypeId 'map_style'
 
 		# google.maps.event.trigger(@map, "resize")
-
 		@_geoLocate()
 
 		@getOption('evnts').each (event) ->
 			self.drawMarker new google.maps.LatLng parseFloat(event.get('venue').latitude), parseFloat(event.get('venue').longitude)
+
+		google.maps.event.addListenerOnce @map, 'tilesloaded', ->
+			google.maps.event.addListenerOnce self.map, 'tilesloaded', ->
+				google.maps.event.trigger self.map, 'resize'
+
+		google.maps.event.addListenerOnce @map, 'resize', ->
+			self._geoLocate()
+
 
 	drawMarker: (location) ->
 
@@ -162,7 +140,7 @@ MapLayout = Marionette.LayoutView.extend
 	# Method 2 IP lookup
 	_ipLocate: ->
 		# https://ipinfo.io
-		jQuery.ajax "http://ipinfo.io", 
+		jQuery.ajax "http://ipinfo.io",
 			context: this
 			success: (location) ->
 				lat_lng = location.loc.split(',')
@@ -183,22 +161,14 @@ MapLayout = Marionette.LayoutView.extend
 # ##     ## ##        ##
 # ##     ## ##        ##
 
-
-Controller = Marionette.Controller.extend
-	upcoming: ->
-		grouped_byDate = App.events['byDate'].groupBy (ev,i) -> moment(ev.get('start').local).format("MMMM YYYY")
-		App.upcoming.show new CategoryLayout categories: grouped_byDate
-
-	alphabetical: ->
-		grouped_byCity = App.events['byDate'].groupBy (ev,i) -> ev.get('venue').address.city.substr(0,1)
-		App.alphabetical.show new CategoryLayout categories: grouped_byCity
-
-	nearby: ->
-		App.nearby.show new MapLayout evnts: App.events['noSort']
-
 App.addInitializer (options) ->
-	
+
 	@ops = options
+
+	r = {}
+	for region in ['upcoming', 'alphabetical', 'nearby']
+		r[region] = options['evi_' + region + '_tag_id'] if jQuery(options['evi_' + region + '_tag_id']).length > 0
+	@addRegions r
 
 	# filter out events that do not match the organizer id
 	events = _.filter options.events, (ev) ->
@@ -206,12 +176,20 @@ App.addInitializer (options) ->
 
 	@events =
 		byDate: new Events _.sortBy events, (ev) -> ev.start.local
-		byCity: new Events _.sortBy events, (ev) -> -ev.venue.address.city.substr(0,1)
+		byCity: new Events (_.sortBy events, (ev) ->
+			att = ev
+			att = att[v] for v in options.evi_alphabetical_event_attribute.split('.')
+			att.substr(0,1)
+		).reverse()
 		noSort: new Events events
 
-	@controller = new Controller
+	grouped_byDate = @events['byDate'].groupBy (ev,i) -> moment(ev.get('start').local).format("MMMM YYYY")
+	@upcoming.show new CategoryLayout categories: grouped_byDate if @upcoming
 
-	# Add navigation
-	new TabsView
-		el: '.tabbed'
-		collection: new Tabs
+	grouped_byCity = @events['byCity'].groupBy (ev,i) ->
+		att = ev.attributes
+		att = att[v] for v in options.evi_alphabetical_event_attribute.split('.')
+		att
+	@alphabetical.show new CategoryLayout categories: grouped_byCity if @alphabetical
+
+	@nearby.show new MapLayout evnts: @events['noSort'] if @nearby
