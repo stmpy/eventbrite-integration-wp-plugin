@@ -209,9 +209,9 @@ class Eventbrite_Integration_Settings {
 										"<span class=\"eventbrite-list-start\">\n" .
 											"\t<%= moment(start.local,moment.ISO_8601).format(\"MM-DD-YY\") %>\n" .
 										"</span> | \n" .
-										"<a href=\"/event/?event_id=<%= ID %>\">\n" .
+										"<a href=\"<%=local_url%>\">\n" .
 											"\t<span class=\"eventbrite-list-sign-up\">\n" .
-												"\t\t<% if(public) { %>View Details <%} else {%> Pre-Register Now<% } %>\n" .
+												"\t\t<% if(public) { %> View Details <%} else {%> Pre-Register Now <% } %>\n" .
 											"\t</span>\n" .
 										"</a>",
 					'placeholder'	=> __( 'Placeholder text for this textarea', 'eventbrite-integration' )
