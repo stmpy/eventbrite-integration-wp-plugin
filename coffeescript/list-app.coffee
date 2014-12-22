@@ -83,28 +83,19 @@ MapLayout = Marionette.LayoutView.extend
 	onRender: ->
 
 		self = this
-		styles = [
-			stylers: [ { hue: "#dfecf1" }, { saturation: 40 } ]
-		,
-			featureType: "road",
-			elementType: "geometry",
-			stylers: [ { lightness: 100 }, { visibility: "simplified" } ]
-		,
-			featureType: "road",
-			elementType: "labels",
-			stylers: [ { visibility: "off" } ]
-		]
 
 		if _.isUndefined(@map)
-			styledMap = new google.maps.StyledMapType styles, { name: "color me rad" }
 			@map = new google.maps.Map @$('#map-canvas')[0],
 				zoom: 4
 				center: new google.maps.LatLng(37.09024, -95.712891);
+				scrollwheel: App.ops.evi_enable_scroll_wheel
 				mapTypeControlOptions:
 					mapTypeIds: [ google.maps.MapTypeId.ROADMAP, 'map_style']
 
-			@map.mapTypes.set 'map_style', styledMap
-			@map.setMapTypeId 'map_style'
+			unless _.isEmpty(App.ops.evi_map_style)
+				styledMap = new google.maps.StyledMapType JSON.parse(App.ops.evi_map_style), { name: "color me rad" }
+				@map.mapTypes.set 'map_style', styledMap
+				@map.setMapTypeId 'map_style'
 
 		# google.maps.event.trigger(@map, "resize")
 		@_geoLocate()
@@ -150,7 +141,7 @@ MapLayout = Marionette.LayoutView.extend
 	_setMyLocation: (lat,lng) ->
 		myLocation = new google.maps.LatLng parseFloat(lat), parseFloat(lng)
 		@map.setCenter myLocation
-		@map.setZoom 8
+		@map.setZoom 6
 		# @drawMarker myLocation
 
 #    ###    ########  ########

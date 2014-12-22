@@ -152,6 +152,21 @@ class Eventbrite_Integration_Settings {
 					'default'		=> 'US',
 					'placeholder'	=> __( 'Region', 'eventbrite-integration' )
 				),
+				array(
+					'id' 			=> 'enable_scroll_wheel',
+					'label'			=> __( 'Enable Scroll Wheel', 'wordpress-plugin-template' ),
+					'description'	=> __( 'if checked then the google map instances will zoom with the scroll wheel' ),
+					'type'			=> 'checkbox',
+					'default'		=> 'false'
+				),
+				array(
+					'id' 			=> 'map_style',
+					'label'			=> __( 'Custom Map Styling' , 'eventbrite-integration' ),
+					'description'	=> __( 'Custom map styling to be applied to the google maps, Visit this page to learn more <a href="https://developers.google.com/maps/documentation/javascript/styling#styling_the_default_map">https://developers.google.com/maps/documentation/javascript/styling#styling_the_default_map</a>', 'eventbrite-integration' ),
+					'type'			=> 'textarea',
+					'default'		=> '[]',
+					'placeholder'	=> __( 'Custom Map Styling', 'eventbrite-integration' )
+				)
 			)
 		);
 		$settings['layout'] = array(
@@ -215,7 +230,7 @@ class Eventbrite_Integration_Settings {
 											"\t</span>\n" .
 										"</a>",
 					'placeholder'	=> __( 'Placeholder text for this textarea', 'eventbrite-integration' )
-				),
+				)
 			)
 		);
 

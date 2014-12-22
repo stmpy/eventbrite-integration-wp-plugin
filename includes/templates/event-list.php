@@ -31,6 +31,8 @@ require_once(dirname(__FILE__) . "/js-libraries.php");
 		'evi_alphabetical_event_attribute' => get_option('evi_alphabetical_event_attribute'),
 		'evi_nearby_tag_id' => get_option('evi_nearby_tag_id'),
 		'evi_event_template' => get_option('evi_event_template'),
+		'evi_enable_scroll_wheel' => get_option('evi_enable_scroll_wheel'),
+		'evi_map_style' => get_option('evi_map_style'),
 	]); ?>);
 </script>
 <?php endif; ?>

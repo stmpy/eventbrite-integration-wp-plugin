@@ -78,50 +78,24 @@ MapLayout = Marionette.LayoutView.extend({
   className: 'eventbrite-list-map row',
   markers: [],
   onRender: function() {
-    var self, styledMap, styles;
+    var self, styledMap;
     self = this;
-    styles = [
-      {
-        stylers: [
-          {
-            hue: "#dfecf1"
-          }, {
-            saturation: 40
-          }
-        ]
-      }, {
-        featureType: "road",
-        elementType: "geometry",
-        stylers: [
-          {
-            lightness: 100
-          }, {
-            visibility: "simplified"
-          }
-        ]
-      }, {
-        featureType: "road",
-        elementType: "labels",
-        stylers: [
-          {
-            visibility: "off"
-          }
-        ]
-      }
-    ];
     if (_.isUndefined(this.map)) {
-      styledMap = new google.maps.StyledMapType(styles, {
-        name: "color me rad"
-      });
       this.map = new google.maps.Map(this.$('#map-canvas')[0], {
         zoom: 4,
         center: new google.maps.LatLng(37.09024, -95.712891),
+        scrollwheel: App.ops.evi_enable_scroll_wheel,
         mapTypeControlOptions: {
           mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
         }
       });
-      this.map.mapTypes.set('map_style', styledMap);
-      this.map.setMapTypeId('map_style');
+      if (!_.isEmpty(App.ops.evi_map_style)) {
+        styledMap = new google.maps.StyledMapType(JSON.parse(App.ops.evi_map_style), {
+          name: "color me rad"
+        });
+        this.map.mapTypes.set('map_style', styledMap);
+        this.map.setMapTypeId('map_style');
+      }
     }
     this._geoLocate();
     this.getOption('evnts').each(function(event) {
@@ -169,7 +143,7 @@ MapLayout = Marionette.LayoutView.extend({
     var myLocation;
     myLocation = new google.maps.LatLng(parseFloat(lat), parseFloat(lng));
     this.map.setCenter(myLocation);
-    return this.map.setZoom(8);
+    return this.map.setZoom(6);
   }
 });
 
