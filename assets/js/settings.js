@@ -26,7 +26,7 @@ jQuery(document).ready(function($) {
       attachment = file_frame.state().get('selection').first().toJSON();
       jQuery("#" + field_id).val(attachment.id);
       if (preview_media) {
-        jQuery("#" + preview_id).attr('src', attachment.sizes.thumbnail.url);
+        jQuery("#" + preview_id).attr('src', (attachment.sizes.thumbnail ? attachment.sizes.thumbnail : attachment.sizes.full).url);
       }
       return file_frame = false;
     });
