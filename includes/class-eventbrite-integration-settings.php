@@ -68,6 +68,26 @@ class Eventbrite_Integration_Settings {
 	 */
 	public function add_menu_item () {
 		$page = add_options_page( __( 'Eventbrite Integration', 'eventbrite-integration' ) , __( 'Eventbrite Integration', 'eventbrite-integration' ) , 'manage_options' , $this->parent->_token . '_settings' ,  array( $this, 'settings_page' ) );
+		add_action( 'admin_print_styles-' . $page, array( $this, 'settings_assets' ) );
+	}
+
+	/**
+	 * Load settings JS & CSS
+	 * @return void
+	 */
+	public function settings_assets () {
+
+		// We're including the farbtastic script & styles here because they're needed for the colour picker
+		// If you're not including a colour picker field then you can leave these calls out as well as the farbtastic dependency for the wpt-admin-js script below
+		// wp_enqueue_style( 'farbtastic' );
+		// wp_enqueue_script( 'farbtastic' );
+
+		// We're including the WP media scripts here because they're needed for the image upload field
+		// If you're not including an image upload then you can leave this function call out
+		wp_enqueue_media();
+
+		wp_register_script( $this->parent->_token . '-settings-js', $this->parent->assets_url . 'js/settings' . $this->parent->script_suffix . '.js', array( /*'farbtastic',*/ 'jquery' ), '1.0.0' );
+		wp_enqueue_script( $this->parent->_token . '-settings-js' );
 	}
 
 	/**
@@ -160,6 +180,14 @@ class Eventbrite_Integration_Settings {
 					'default'		=> 'false'
 				),
 				array(
+					'id' 			=> 'marker_icon',
+					'label'			=> __( 'Marker Icon' , 'eventbrite-integration' ),
+					'description'	=> __( 'An Image icon for the google maps marker. If no image is selected then the default google image will be used.', 'eventbrite-integration' ),
+					'type'			=> 'image',
+					'default'		=> '',
+					'placeholder'	=> ''
+				),
+				array(
 					'id' 			=> 'map_style',
 					'label'			=> __( 'Custom Map Styling' , 'eventbrite-integration' ),
 					'description'	=> __( 'Custom map styling to be applied to the google maps, Visit this page to learn more <a href="https://developers.google.com/maps/documentation/javascript/styling#styling_the_default_map">https://developers.google.com/maps/documentation/javascript/styling#styling_the_default_map</a>', 'eventbrite-integration' ),
@@ -169,9 +197,9 @@ class Eventbrite_Integration_Settings {
 				)
 			)
 		);
-		$settings['layout'] = array(
-			'title'					=> __( 'Layouts', 'eventbrite-integration' ),
-			'description'			=> __( 'These are some extra input fields that maybe aren\'t as common as the others.', 'eventbrite-integration' ),
+		$settings['ids'] = array(
+			'title'					=> __( 'IDs', 'eventbrite-integration' ),
+			'description'			=> __( 'IDs of elements to insert application information.', 'eventbrite-integration' ),
 			'fields'				=> array(
 				array(
 					'id' 			=> 'upcoming_tag_id',
@@ -179,7 +207,7 @@ class Eventbrite_Integration_Settings {
 					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert the event list categorized by the event start date', 'eventbrite-integration' ),
 					'type'			=> 'text',
 					'default'		=> '#eventbrite-sort-upcoming',
-					'placeholder'	=> __( 'Upcoming Tag ID', 'eventbrite-integration' )
+					'placeholder'	=> ''
 				),
 				array(
 					'id' 			=> 'alphabetical_tag_id',
@@ -187,7 +215,7 @@ class Eventbrite_Integration_Settings {
 					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert the event list categorized by the name of an event attribute', 'eventbrite-integration' ),
 					'type'			=> 'text',
 					'default'		=> '#eventbrite-sort-alphabetical',
-					'placeholder'	=> __( 'Alphabetical Tag ID', 'eventbrite-integration' )
+					'placeholder'	=> ''
 				),
 				array(
 					'id' 			=> 'alphabetical_event_attribute',
@@ -195,28 +223,58 @@ class Eventbrite_Integration_Settings {
 					'description'	=> __( 'The name of an event attribute to sort the events by when done alphabetically', 'eventbrite-integration' ),
 					'type'			=> 'text',
 					'default'		=> 'venue.address.city',
-					'placeholder'	=> __( 'Alphabetical Event Attribute', 'eventbrite-integration' )
+					'placeholder'	=> ''
 				),
 				array(
 					'id' 			=> 'nearby_tag_id',
 					'label'			=> __( 'Nearby Tag ID' , 'eventbrite-integration' ),
-					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert a google map of the eventbrite events', 'eventbrite-integration' ),
+					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert the event list categorized by location in proximity to the viewer', 'eventbrite-integration' ),
 					'type'			=> 'text',
 					'default'		=> '#eventbrite-sort-nearby',
-					'placeholder'	=> __( 'Nearby Tag ID', 'eventbrite-integration' )
+					'placeholder'	=> ''
 				),
 				array(
-					'id' 			=> 'event_details_tag_id',
-					'label'			=> __( 'Event Details Tag ID' , 'eventbrite-integration' ),
-					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event details', 'eventbrite-integration' ),
+					'id' 			=> 'map_tag_id',
+					'label'			=> __( 'Map Tag ID' , 'eventbrite-integration' ),
+					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert a google map of the eventbrite events', 'eventbrite-integration' ),
 					'type'			=> 'text',
-					'default'		=> '#eventbrite-event-details',
-					'placeholder'	=> __( 'Event Details Tag ID', 'eventbrite-integration' )
+					'default'		=> '#eventbrite-map',
+					'placeholder'	=> ''
 				),
+				array(
+					'id' 			=> 'event_links_tag_id',
+					'label'			=> __( 'Event Links Tag ID' , 'eventbrite-integration' ),
+					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event links', 'eventbrite-integration' ),
+					'type'			=> 'text',
+					'default'		=> '#eventbrite-event-links',
+					'placeholder'	=> ''
+				),
+				array(
+					'id' 			=> 'event_tickets_tag_id',
+					'label'			=> __( 'Event Tickets Tag ID' , 'eventbrite-integration' ),
+					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event ticket details', 'eventbrite-integration' ),
+					'type'			=> 'text',
+					'default'		=> '#eventbrite-event-tickets',
+					'placeholder'	=> ''
+				),
+				array(
+					'id' 			=> 'event_when_where_tag_id',
+					'label'			=> __( 'Event When & Where Tag ID' , 'eventbrite-integration' ),
+					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event when & where details', 'eventbrite-integration' ),
+					'type'			=> 'text',
+					'default'		=> '#eventbrite-event-when-where',
+					'placeholder'	=> ''
+				),
+			)
+		);
+		$settings['templates'] = array(
+			'title'					=> __( 'Templates', 'eventbrite-integration' ),
+			'description'			=> __( 'Templates of different elements throughout the backbone application.', 'eventbrite-integration' ),
+			'fields'				=> array(
 				array(
 					'id' 			=> 'event_template',
-					'label'			=> __( 'Event Template' , 'eventbrite-integration' ),
-					'description'	=> __( 'This will define the template to be used with the event lists', 'eventbrite-integration' ),
+					'label'			=> __( 'Event List: Event Template' , 'eventbrite-integration' ),
+					'description'	=> __( 'This will define the template to be used with the events in an event list', 'eventbrite-integration' ),
 					'type'			=> 'textarea',
 					'default'		=> "<span class=\"eventbrite-list-venue-name\">\n" .
 											"\t<%= venue.address.city %>, <%= venue.address.region %>\n".
@@ -224,7 +282,7 @@ class Eventbrite_Integration_Settings {
 										"<span class=\"eventbrite-list-start\">\n" .
 											"\t<%= moment(start.local,moment.ISO_8601).format(\"MM-DD-YY\") %>\n" .
 										"</span> | \n" .
-										"<a href=\"<%=local_url%>\">\n" .
+										"<a href=\"<%=local_url%>\" target=\"_blank\">\n" .
 											"\t<span class=\"eventbrite-list-sign-up\">\n" .
 												"\t\t<% if(public) { %> View Details <%} else {%> Pre-Register Now <% } %>\n" .
 											"\t</span>\n" .

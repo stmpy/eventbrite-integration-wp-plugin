@@ -23,16 +23,18 @@ require_once(dirname(__FILE__) . "/js-libraries.php");
 <script type="text/javascript">
 	App.start(<?= json_encode([
 		'events' => $events->posts,
-		'evi_event_detail_page' => get_option('evi_event_detail_page'),
-		'evi_event_id_variable' => get_option('evi_event_id_variable'),
-		'evi_organizer_id' => get_option('evi_organizer_id'),
-		'evi_upcoming_tag_id' => get_option('evi_upcoming_tag_id'),
-		'evi_alphabetical_tag_id' => get_option('evi_alphabetical_tag_id'),
-		'evi_alphabetical_event_attribute' => get_option('evi_alphabetical_event_attribute'),
-		'evi_nearby_tag_id' => get_option('evi_nearby_tag_id'),
-		'evi_event_template' => get_option('evi_event_template'),
-		'evi_enable_scroll_wheel' => get_option('evi_enable_scroll_wheel'),
-		'evi_map_style' => get_option('evi_map_style'),
+		'evi_event_detail_page' => get_option('evi_event_detail_page',null),
+		'evi_event_id_variable' => get_option('evi_event_id_variable',null),
+		'evi_organizer_id' => get_option('evi_organizer_id',null),
+		'evi_upcoming_tag_id' => get_option('evi_upcoming_tag_id',null),
+		'evi_alphabetical_tag_id' => get_option('evi_alphabetical_tag_id',null),
+		'evi_alphabetical_event_attribute' => get_option('evi_alphabetical_event_attribute',null),
+		'evi_nearby_tag_id' => get_option('evi_nearby_tag_id',null),
+		'evi_map_tag_id' => get_option('evi_map_tag_id',null),
+		'evi_event_template' => get_option('evi_event_template',null),
+		'evi_enable_scroll_wheel' => get_option('evi_enable_scroll_wheel',null),
+		'evi_map_style' => get_option('evi_map_style',null),
+		'evi_marker_icon' => get_option('evi_marker_icon',null) ? wp_get_attachment_thumb_url( get_option('evi_marker_icon') ) : null,
 	]); ?>);
 </script>
 <?php endif; ?>

@@ -32,8 +32,8 @@ Tabs = Backbone.Collection.extend model: Tab
 
 EventView = Marionette.ItemView.extend
 	className: 'eventbrite-event'
-	template: (model) ->
-		_.template(App.ops.evi_event_template)(model)
+	template: (attributes) ->
+		_.template(App.ops.evi_event_template)(attributes)
 
 ThirdColumnView = Marionette.CollectionView.extend
 	className: 'vc_span4 wpb_column column_container col no-extra-padding'
@@ -73,7 +73,10 @@ CategoryLayout = Marionette.LayoutView.extend
 		_.each @getOption('categories'), (group,category) ->
 
 			self.$el.prepend "<div class='vc_row-fluid'><div class='vc_span12 col'><h4 class='eventbrite-category-title'>" + category + "</h4></div></div>", (new ColumnLayout column_count: 3, columns: _.groupBy group, (event,i) ->
-				(parseInt i / (group.length / 3))).render().el
+					console.log event.get('post_title') + " " + i + ": " + (parseInt (i % 3) + 1)
+					console.log
+					(parseInt (i % 3) + 1)
+				).render().el
 
 MapLayout = Marionette.LayoutView.extend
 	template: _.template '<div id="map-canvas" class="google-map-large vc_span12 col"></div>'
@@ -97,11 +100,10 @@ MapLayout = Marionette.LayoutView.extend
 				@map.mapTypes.set 'map_style', styledMap
 				@map.setMapTypeId 'map_style'
 
-		# google.maps.event.trigger(@map, "resize")
 		@_geoLocate()
 
 		@getOption('evnts').each (event) ->
-			self.drawMarker new google.maps.LatLng parseFloat(event.get('venue').latitude), parseFloat(event.get('venue').longitude)
+			self.drawMarker new google.maps.LatLng(parseFloat(event.get('venue').latitude), parseFloat(event.get('venue').longitude)), event.get('local_url')
 
 		google.maps.event.addListenerOnce @map, 'tilesloaded', ->
 			google.maps.event.addListenerOnce self.map, 'tilesloaded', ->
@@ -111,12 +113,20 @@ MapLayout = Marionette.LayoutView.extend
 			self._geoLocate()
 
 
-	drawMarker: (location) ->
+	drawMarker: (location, url = null) ->
 
-		@markers.push new google.maps.Marker
+		settings =
 			map: @map
 			position: location
 			animation: google.maps.Animation.DROP
+
+		settings.url = url if url
+		settings.icon = App.ops.evi_marker_icon if App.ops.evi_marker_icon
+
+		@markers.push (marker = new google.maps.Marker settings)
+
+		google.maps.event.addListener marker, 'click', ->
+			window.location.href = @url
 
 	# Method 1 Geolocation API
 	_geoLocate: ->
@@ -142,6 +152,15 @@ MapLayout = Marionette.LayoutView.extend
 		myLocation = new google.maps.LatLng parseFloat(lat), parseFloat(lng)
 		@map.setCenter myLocation
 		@map.setZoom 6
+
+		if App.nearby
+			evs = new Events _.sortBy App.events_raw, (ev) ->
+				### ev.proximity = ###
+				# ev.proximity
+				google.maps.geometry.spherical.computeDistanceBetween(myLocation, new google.maps.LatLng(ev.venue.latitude, ev.venue.longitude)) * 0.00062137
+
+			App.nearby.show new CategoryLayout categories: { 'Closest to Furthest': evs.models }
+
 		# @drawMarker myLocation
 
 #    ###    ########  ########
@@ -157,22 +176,22 @@ App.addInitializer (options) ->
 	@ops = options
 
 	r = {}
-	for region in ['upcoming', 'alphabetical', 'nearby']
+	for region in ['upcoming', 'alphabetical', 'nearby', 'map']
 		r[region] = options['evi_' + region + '_tag_id'] if jQuery(options['evi_' + region + '_tag_id']).length > 0
 	@addRegions r
 
 	# filter out events that do not match the organizer id
-	events = _.filter options.events, (ev) ->
+	@events_raw = _.filter options.events, (ev) ->
 		return ev.organizer.id == options.evi_organizer_id
 
 	@events =
-		byDate: new Events _.sortBy events, (ev) -> ev.start.local
-		byCity: new Events (_.sortBy events, (ev) ->
+		byDate: new Events (_.sortBy @events_raw, (ev) -> ev.start.local).reverse()
+		byCity: new Events (_.sortBy @events_raw, (ev) ->
 			att = ev
 			att = att[v] for v in options.evi_alphabetical_event_attribute.split('.')
 			att.substr(0,1)
 		).reverse()
-		noSort: new Events events
+		noSort: new Events @events_raw
 
 	grouped_byDate = @events['byDate'].groupBy (ev,i) -> moment(ev.get('start').local).format("MMMM YYYY")
 	@upcoming.show new CategoryLayout categories: grouped_byDate if @upcoming
@@ -183,4 +202,4 @@ App.addInitializer (options) ->
 		att
 	@alphabetical.show new CategoryLayout categories: grouped_byCity if @alphabetical
 
-	@nearby.show new MapLayout evnts: @events['noSort'] if @nearby
+	@map.show new MapLayout evnts: @events['noSort'] if @map

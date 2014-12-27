@@ -24,8 +24,8 @@ Tabs = Backbone.Collection.extend({
 
 EventView = Marionette.ItemView.extend({
   className: 'eventbrite-event',
-  template: function(model) {
-    return _.template(App.ops.evi_event_template)(model);
+  template: function(attributes) {
+    return _.template(App.ops.evi_event_template)(attributes);
   }
 });
 
@@ -66,7 +66,9 @@ CategoryLayout = Marionette.LayoutView.extend({
       return self.$el.prepend("<div class='vc_row-fluid'><div class='vc_span12 col'><h4 class='eventbrite-category-title'>" + category + "</h4></div></div>", (new ColumnLayout({
         column_count: 3,
         columns: _.groupBy(group, function(event, i) {
-          return parseInt(i / (group.length / 3));
+          console.log(event.get('post_title') + " " + i + ": " + (parseInt((i % 3) + 1)));
+          console.log;
+          return parseInt((i % 3) + 1);
         })
       })).render().el);
     });
@@ -99,7 +101,7 @@ MapLayout = Marionette.LayoutView.extend({
     }
     this._geoLocate();
     this.getOption('evnts').each(function(event) {
-      return self.drawMarker(new google.maps.LatLng(parseFloat(event.get('venue').latitude), parseFloat(event.get('venue').longitude)));
+      return self.drawMarker(new google.maps.LatLng(parseFloat(event.get('venue').latitude), parseFloat(event.get('venue').longitude)), event.get('local_url'));
     });
     google.maps.event.addListenerOnce(this.map, 'tilesloaded', function() {
       return google.maps.event.addListenerOnce(self.map, 'tilesloaded', function() {
@@ -110,12 +112,26 @@ MapLayout = Marionette.LayoutView.extend({
       return self._geoLocate();
     });
   },
-  drawMarker: function(location) {
-    return this.markers.push(new google.maps.Marker({
+  drawMarker: function(location, url) {
+    var marker, settings;
+    if (url == null) {
+      url = null;
+    }
+    settings = {
       map: this.map,
       position: location,
       animation: google.maps.Animation.DROP
-    }));
+    };
+    if (url) {
+      settings.url = url;
+    }
+    if (App.ops.evi_marker_icon) {
+      settings.icon = App.ops.evi_marker_icon;
+    }
+    this.markers.push((marker = new google.maps.Marker(settings)));
+    return google.maps.event.addListener(marker, 'click', function() {
+      return window.location.href = this.url;
+    });
   },
   _geoLocate: function() {
     var self;
@@ -140,18 +156,30 @@ MapLayout = Marionette.LayoutView.extend({
     });
   },
   _setMyLocation: function(lat, lng) {
-    var myLocation;
+    var evs, myLocation;
     myLocation = new google.maps.LatLng(parseFloat(lat), parseFloat(lng));
     this.map.setCenter(myLocation);
-    return this.map.setZoom(6);
+    this.map.setZoom(6);
+    if (App.nearby) {
+      evs = new Events(_.sortBy(App.events_raw, function(ev) {
+
+        /* ev.proximity = */
+        return google.maps.geometry.spherical.computeDistanceBetween(myLocation, new google.maps.LatLng(ev.venue.latitude, ev.venue.longitude)) * 0.00062137;
+      }));
+      return App.nearby.show(new CategoryLayout({
+        categories: {
+          'Closest to Furthest': evs.models
+        }
+      }));
+    }
   }
 });
 
 App.addInitializer(function(options) {
-  var events, grouped_byCity, grouped_byDate, r, region, _i, _len, _ref;
+  var grouped_byCity, grouped_byDate, r, region, _i, _len, _ref;
   this.ops = options;
   r = {};
-  _ref = ['upcoming', 'alphabetical', 'nearby'];
+  _ref = ['upcoming', 'alphabetical', 'nearby', 'map'];
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     region = _ref[_i];
     if (jQuery(options['evi_' + region + '_tag_id']).length > 0) {
@@ -159,14 +187,14 @@ App.addInitializer(function(options) {
     }
   }
   this.addRegions(r);
-  events = _.filter(options.events, function(ev) {
+  this.events_raw = _.filter(options.events, function(ev) {
     return ev.organizer.id === options.evi_organizer_id;
   });
   this.events = {
-    byDate: new Events(_.sortBy(events, function(ev) {
+    byDate: new Events((_.sortBy(this.events_raw, function(ev) {
       return ev.start.local;
-    })),
-    byCity: new Events((_.sortBy(events, function(ev) {
+    })).reverse()),
+    byCity: new Events((_.sortBy(this.events_raw, function(ev) {
       var att, v, _j, _len1, _ref1;
       att = ev;
       _ref1 = options.evi_alphabetical_event_attribute.split('.');
@@ -176,7 +204,7 @@ App.addInitializer(function(options) {
       }
       return att.substr(0, 1);
     })).reverse()),
-    noSort: new Events(events)
+    noSort: new Events(this.events_raw)
   };
   grouped_byDate = this.events['byDate'].groupBy(function(ev, i) {
     return moment(ev.get('start').local).format("MMMM YYYY");
@@ -201,8 +229,8 @@ App.addInitializer(function(options) {
       categories: grouped_byCity
     }));
   }
-  if (this.nearby) {
-    return this.nearby.show(new MapLayout({
+  if (this.map) {
+    return this.map.show(new MapLayout({
       evnts: this.events['noSort']
     }));
   }
