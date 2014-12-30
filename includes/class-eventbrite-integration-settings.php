@@ -265,6 +265,30 @@ class Eventbrite_Integration_Settings {
 					'default'		=> '#eventbrite-event-when-where',
 					'placeholder'	=> ''
 				),
+				array(
+					'id' 			=> 'event_settings_tag_id',
+					'label'			=> __( 'Event settings Tag ID' , 'eventbrite-integration' ),
+					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event details', 'eventbrite-integration' ),
+					'type'			=> 'text',
+					'default'		=> '.eventbrite-event-settings',
+					'placeholder'	=> ''
+				),
+				array(
+					'id' 			=> 'event_prereg_tag_id',
+					'label'			=> __( 'Event Pre-Registration Form Tag ID' , 'eventbrite-integration' ),
+					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event details', 'eventbrite-integration' ),
+					'type'			=> 'text',
+					'default'		=> '.eventbrite-event-preregistration',
+					'placeholder'	=> ''
+				),
+				array(
+					'id' 			=> 'event_live_tag_id',
+					'label'			=> __( 'Live Event Details Tag ID' , 'eventbrite-integration' ),
+					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event details', 'eventbrite-integration' ),
+					'type'			=> 'text',
+					'default'		=> '.eventbrite-event-live',
+					'placeholder'	=> ''
+				),
 			)
 		);
 		$settings['templates'] = array(

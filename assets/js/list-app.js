@@ -63,11 +63,9 @@ CategoryLayout = Marionette.LayoutView.extend({
     var self;
     self = this;
     return _.each(this.getOption('categories'), function(group, category) {
-      return self.$el.prepend("<div class='vc_row-fluid'><div class='vc_span12 col'><h4 class='eventbrite-category-title'>" + category + "</h4></div></div>", (new ColumnLayout({
+      return self.$el.append("<div class='vc_row-fluid'><div class='vc_span12 col'><h4 class='eventbrite-category-title'>" + category + "</h4></div></div>", (new ColumnLayout({
         column_count: 3,
         columns: _.groupBy(group, function(event, i) {
-          console.log(event.get('post_title') + " " + i + ": " + (parseInt((i % 3) + 1)));
-          console.log;
           return parseInt((i % 3) + 1);
         })
       })).render().el);
@@ -76,14 +74,14 @@ CategoryLayout = Marionette.LayoutView.extend({
 });
 
 MapLayout = Marionette.LayoutView.extend({
-  template: _.template('<div id="map-canvas" class="google-map-large vc_span12 col"></div>'),
+  template: _.template(''),
   className: 'eventbrite-list-map row',
   markers: [],
   onRender: function() {
     var self, styledMap;
     self = this;
     if (_.isUndefined(this.map)) {
-      this.map = new google.maps.Map(this.$('#map-canvas')[0], {
+      this.map = new google.maps.Map(App.map.el, {
         zoom: 4,
         center: new google.maps.LatLng(37.09024, -95.712891),
         scrollwheel: App.ops.evi_enable_scroll_wheel,
@@ -191,10 +189,10 @@ App.addInitializer(function(options) {
     return ev.organizer.id === options.evi_organizer_id;
   });
   this.events = {
-    byDate: new Events((_.sortBy(this.events_raw, function(ev) {
+    byDate: new Events(_.sortBy(this.events_raw, function(ev) {
       return ev.start.local;
-    })).reverse()),
-    byCity: new Events((_.sortBy(this.events_raw, function(ev) {
+    })),
+    byCity: new Events(_.sortBy(this.events_raw, function(ev) {
       var att, v, _j, _len1, _ref1;
       att = ev;
       _ref1 = options.evi_alphabetical_event_attribute.split('.');
@@ -203,12 +201,14 @@ App.addInitializer(function(options) {
         att = att[v];
       }
       return att.substr(0, 1);
-    })).reverse()),
+    })),
     noSort: new Events(this.events_raw)
   };
   grouped_byDate = this.events['byDate'].groupBy(function(ev, i) {
+    console.log(ev.get('post_title') + ': ' + moment(ev.get('start').local).format("MMMM Do YYYY"));
     return moment(ev.get('start').local).format("MMMM YYYY");
   });
+  console.log(grouped_byDate);
   if (this.upcoming) {
     this.upcoming.show(new CategoryLayout({
       categories: grouped_byDate

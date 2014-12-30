@@ -1,4 +1,4 @@
-var App, Event, EventLinks, Link, LinkList, LinkView, NoEvent, Ticket, TicketView, Tickets, TicketsView, WhenWhereView;
+var App, Event, EventDetails, EventLinks, Link, LinkList, LinkView, NoEvent, Ticket, TicketView, Tickets, TicketsView, WhenWhereView;
 
 App = new Marionette.Application;
 
@@ -28,7 +28,7 @@ LinkList = Backbone.Collection.extend({
 
 LinkView = Marionette.ItemView.extend({
   template: function(attributes) {
-    return Handlebars.compile(jQuery(App.links.el).html())(attributes) + '<br />';
+    return Handlebars.compile(jQuery(App.event_links.el).html())(attributes) + '<br />';
   }
 });
 
@@ -47,7 +47,6 @@ NoEvent = Marionette.ItemView.extend({
 Ticket = Backbone.Model.extend({
   initialize: function(attributes) {
     var sale_ends, two_weeks;
-    console.log(attributes);
     if (attributes.free) {
       this.set('price', 'Free');
     } else {
@@ -69,7 +68,7 @@ Tickets = Backbone.Collection.extend({
 
 TicketView = Marionette.ItemView.extend({
   template: function(attributes) {
-    return Handlebars.compile(jQuery(App.tickets.el).html())(attributes) + '<br />';
+    return Handlebars.compile(jQuery(App.event_tickets.el).html())(attributes) + '<br />';
   }
 });
 
@@ -82,18 +81,25 @@ TicketsView = Marionette.CollectionView.extend({
 
 WhenWhereView = Marionette.ItemView.extend({
   template: function(attributes) {
-    console.log(attributes);
-    return Handlebars.compile(jQuery(App.when_where.el).html())(attributes);
+    return Handlebars.compile(jQuery(App.event_when_where.el).html())(attributes);
   }
 });
 
 App.hideRegForm = function() {
-  return jQuery('.main-content form').parent().hide();
+  return jQuery('.eventbrite-event-private').each(function(i, e) {
+    return jQuery(e).hide();
+  });
+};
+
+App.hidePublicDetails = function() {
+  return jQuery('.eventbrite-event-public').each(function(i, e) {
+    return jQuery(e).hide();
+  });
 };
 
 App.displayLinks = function(ev) {
-  if (ev.get('public')) {
-    this.links.show(new EventLinks({
+  this.event_links.$el.each(function(i, e) {
+    return jQuery(e).html((new EventLinks({
       collection: new LinkList([
         {
           url: ev.get('url') + '?team_reg_type=individual',
@@ -113,55 +119,74 @@ App.displayLinks = function(ev) {
           text: 'Manage your team'
         }
       ])
-    }));
-    return this.hideRegForm();
-  }
+    })).render().el);
+  });
+  return this.hideRegForm();
 };
 
-App.displayTickets = function(ev) {
-  if (this.tickets) {
-    return this.tickets.show(new TicketsView({
-      collection: new Tickets(ev.get('tickets'))
-    }));
+
+/* Settings */
+
+EventDetails = Marionette.ItemView.extend({
+  template: function(attributes) {
+    return Handlebars.compile(jQuery(App.event_settings.el).html())(attributes);
   }
+});
+
+App.displayTickets = function(ev) {
+  return this.event_tickets.$el.each(function(i, e) {
+    return jQuery(e).html((new TicketsView({
+      collection: new Tickets(ev.get('tickets'))
+    })).render().el);
+  });
 };
 
 App.displayWhenWhere = function(ev) {
-  if (this.when_where) {
-    this.drawMap(ev);
-    return this.when_where.show(new WhenWhereView({
+  return this.event_when_where.$el.each(function(i, e) {
+    return jQuery(e).html((new WhenWhereView({
       model: ev
-    }));
-  }
+    })).render().el);
+  });
+};
+
+App.displaySettings = function(ev) {
+  return this.event_settings.$el.each(function(i, e) {
+    return jQuery(e).html((new EventDetails({
+      model: ev
+    })).render().el);
+  });
 };
 
 App.drawMap = function(ev) {
-  var location, map, settings, styledMap;
+  var location;
   location = new google.maps.LatLng(ev.get('venue').latitude, ev.get('venue').longitude);
-  map = new google.maps.Map(jQuery('#map-canvas')[0], {
-    zoom: 11,
-    center: location,
-    scrollwheel: App.ops.evi_enable_scroll_wheel,
-    mapTypeControlOptions: {
-      mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
-    }
-  });
-  if (!_.isEmpty(App.ops.evi_map_style)) {
-    styledMap = new google.maps.StyledMapType(JSON.parse(App.ops.evi_map_style), {
-      name: "color me rad"
+  return this.map.$el.each(function(i, e) {
+    var map, settings, styledMap;
+    map = new google.maps.Map(e, {
+      zoom: 11,
+      center: location,
+      scrollwheel: App.ops.evi_enable_scroll_wheel,
+      mapTypeControlOptions: {
+        mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
+      }
     });
-    map.mapTypes.set('map_style', styledMap);
-    map.setMapTypeId('map_style');
-  }
-  settings = {
-    map: map,
-    position: location,
-    animation: google.maps.Animation.DROP
-  };
-  if (App.ops.evi_marker_icon) {
-    settings.icon = App.ops.evi_marker_icon;
-  }
-  return new google.maps.Marker(settings);
+    if (!_.isEmpty(App.ops.evi_map_style)) {
+      styledMap = new google.maps.StyledMapType(JSON.parse(App.ops.evi_map_style), {
+        name: "color me rad"
+      });
+      map.mapTypes.set('map_style', styledMap);
+      map.setMapTypeId('map_style');
+    }
+    settings = {
+      map: map,
+      position: location,
+      animation: google.maps.Animation.DROP
+    };
+    if (App.ops.evi_marker_icon) {
+      settings.icon = App.ops.evi_marker_icon;
+    }
+    return new google.maps.Marker(settings);
+  });
 };
 
 App.addInitializer(function(options) {
@@ -169,22 +194,39 @@ App.addInitializer(function(options) {
   console.log(options.event);
   this.ops = options;
   r = {};
-  _ref = ['links', 'tickets', 'when_where'];
+  _ref = ['event_links', 'event_tickets', 'event_when_where', 'map', 'event_settings'];
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     region = _ref[_i];
-    if (jQuery(options['evi_event_' + region + '_tag_id']).length > 0) {
-      r[region] = options['evi_event_' + region + '_tag_id'];
+    if (jQuery(options['evi_' + region + '_tag_id']).length > 0) {
+      r[region] = options['evi_' + region + '_tag_id'];
     }
   }
   this.addRegions(r);
   ev = new Event(options.event);
   if (_.isEmpty(options.event.ID)) {
     this.hideRegForm();
-    this.links.show(new NoEvent);
+    this.event_links.show(new NoEvent);
     return;
   }
   jQuery('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('venue').address.city + ", " + ev.get('venue').address.region);
-  this.displayLinks(ev);
-  this.displayTickets(ev);
-  return this.displayWhenWhere(ev);
+  if (this.event_when_where) {
+    this.displayWhenWhere(ev);
+  }
+  if (this.event_settings) {
+    this.displaySettings(ev);
+  }
+  if (this.map) {
+    this.drawMap(ev);
+  }
+  if (ev.get('public')) {
+    this.hideRegForm();
+    if (this.event_links) {
+      this.displayLinks(ev);
+    }
+    if (this.event_tickets) {
+      return this.displayTickets(ev);
+    }
+  } else {
+    return this.hidePublicDetails();
+  }
 });

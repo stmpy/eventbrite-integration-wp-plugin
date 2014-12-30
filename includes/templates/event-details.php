@@ -17,6 +17,8 @@ require_once(dirname(__FILE__) . "/js-libraries.php");
 		'event' => $event->post,
 		'evi_event_links_tag_id' => get_option('evi_event_links_tag_id', null),
 		'evi_event_tickets_tag_id' => get_option('evi_event_tickets_tag_id', null),
+		'evi_event_settings_tag_id' => get_option('evi_event_settings_tag_id', null),
+		'evi_map_tag_id' => get_option('evi_map_tag_id', null),
 		'evi_event_when_where_tag_id' => get_option('evi_event_when_where_tag_id', null),
 		'evi_enable_scroll_wheel' => get_option('evi_enable_scroll_wheel',null),
 		'evi_map_style' => get_option('evi_map_style',null),

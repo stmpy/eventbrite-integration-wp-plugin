@@ -72,14 +72,12 @@ CategoryLayout = Marionette.LayoutView.extend
 		self = this
 		_.each @getOption('categories'), (group,category) ->
 
-			self.$el.prepend "<div class='vc_row-fluid'><div class='vc_span12 col'><h4 class='eventbrite-category-title'>" + category + "</h4></div></div>", (new ColumnLayout column_count: 3, columns: _.groupBy group, (event,i) ->
-					console.log event.get('post_title') + " " + i + ": " + (parseInt (i % 3) + 1)
-					console.log
+			self.$el.append "<div class='vc_row-fluid'><div class='vc_span12 col'><h4 class='eventbrite-category-title'>" + category + "</h4></div></div>", (new ColumnLayout column_count: 3, columns: _.groupBy group, (event,i) ->
 					(parseInt (i % 3) + 1)
 				).render().el
 
 MapLayout = Marionette.LayoutView.extend
-	template: _.template '<div id="map-canvas" class="google-map-large vc_span12 col"></div>'
+	template: _.template ''
 	className: 'eventbrite-list-map row'
 	markers: []
 
@@ -88,7 +86,7 @@ MapLayout = Marionette.LayoutView.extend
 		self = this
 
 		if _.isUndefined(@map)
-			@map = new google.maps.Map @$('#map-canvas')[0],
+			@map = new google.maps.Map App.map.el,
 				zoom: 4
 				center: new google.maps.LatLng(37.09024, -95.712891);
 				scrollwheel: App.ops.evi_enable_scroll_wheel
@@ -185,15 +183,17 @@ App.addInitializer (options) ->
 		return ev.organizer.id == options.evi_organizer_id
 
 	@events =
-		byDate: new Events (_.sortBy @events_raw, (ev) -> ev.start.local).reverse()
-		byCity: new Events (_.sortBy @events_raw, (ev) ->
+		byDate: new Events _.sortBy @events_raw, (ev) -> ev.start.local
+		byCity: new Events _.sortBy @events_raw, (ev) ->
 			att = ev
 			att = att[v] for v in options.evi_alphabetical_event_attribute.split('.')
 			att.substr(0,1)
-		).reverse()
 		noSort: new Events @events_raw
 
-	grouped_byDate = @events['byDate'].groupBy (ev,i) -> moment(ev.get('start').local).format("MMMM YYYY")
+	grouped_byDate = @events['byDate'].groupBy (ev,i) ->
+		console.log ev.get('post_title') + ': ' + moment(ev.get('start').local).format("MMMM Do YYYY")
+		moment(ev.get('start').local).format("MMMM YYYY")
+	console.log grouped_byDate
 	@upcoming.show new CategoryLayout categories: grouped_byDate if @upcoming
 
 	grouped_byCity = @events['byCity'].groupBy (ev,i) ->
