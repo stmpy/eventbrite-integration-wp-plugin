@@ -8,7 +8,7 @@ Event = Backbone.Model.extend({
     start = attributes.start;
     mStart = moment(start.local);
     mEnd = moment(attributes.end.local);
-    start.formatted = mStart.format('dddd, MMMM Mo, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz');
+    start.formatted = mStart.format('dddd, MMMM Do, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz');
     return this.set('start', start);
   }
 });
@@ -50,7 +50,7 @@ Ticket = Backbone.Model.extend({
     if (attributes.free) {
       this.set('price', 'Free');
     } else {
-      this.set('price', attributes.actual_cost.display);
+      this.set('price', attributes.cost.display);
     }
     sale_ends = moment(attributes.sales_end);
     two_weeks = moment().add(2, 'weeks');
@@ -191,7 +191,6 @@ App.drawMap = function(ev) {
 
 App.addInitializer(function(options) {
   var ev, r, region, _i, _len, _ref;
-  console.log(options.event);
   this.ops = options;
   r = {};
   _ref = ['event_links', 'event_tickets', 'event_when_where', 'map', 'event_settings'];

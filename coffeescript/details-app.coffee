@@ -5,7 +5,7 @@ Event = Backbone.Model.extend
 		start = attributes.start
 		mStart = moment(start.local)
 		mEnd = moment(attributes.end.local)
-		start.formatted = mStart.format('dddd, MMMM Mo, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz')
+		start.formatted = mStart.format('dddd, MMMM Do, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz')
 		@set 'start', start
 
 ### LINKING ###
@@ -33,7 +33,7 @@ Ticket = Backbone.Model.extend
 		if attributes.free
 			@set 'price', 'Free'
 		else
-			@set 'price', attributes.actual_cost.display
+			@set 'price', attributes.cost.display
 
 		sale_ends = moment(attributes.sales_end)
 		two_weeks = moment().add 2, 'weeks'
@@ -48,7 +48,7 @@ Tickets = Backbone.Collection.extend model: Ticket
 TicketView = Marionette.ItemView.extend
 	template: (attributes) ->
 		Handlebars.compile(jQuery(App.event_tickets.el).html())(attributes) + '<br />'
-	# template: Handlebars.compile '{{name}}: {{#if free}} FREE {{else}} {{ actual_cost.display }} {{/if}}'
+	# template: Handlebars.compile '{{name}}: {{#if free}} FREE {{else}} {{ cost.display }} {{/if}}'
 TicketsView = Marionette.CollectionView.extend
 	childView: TicketView
 
@@ -137,7 +137,7 @@ App.drawMap = (ev) ->
 		new google.maps.Marker settings
 
 App.addInitializer (options) ->
-	console.log options.event
+	# console.log options.event
 	@ops = options
 	r = {}
 	for region in ['event_links', 'event_tickets', 'event_when_where', 'map', 'event_settings']
