@@ -94,7 +94,7 @@ MapLayout = Marionette.LayoutView.extend
 					mapTypeIds: [ google.maps.MapTypeId.ROADMAP, 'map_style']
 
 			unless _.isEmpty(App.ops.evi_map_style)
-				styledMap = new google.maps.StyledMapType JSON.parse(App.ops.evi_map_style), { name: "color me rad" }
+				styledMap = new google.maps.StyledMapType JSON.parse(App.ops.evi_map_style), { name: App.ops.evi_map_style_name }
 				@map.mapTypes.set 'map_style', styledMap
 				@map.setMapTypeId 'map_style'
 

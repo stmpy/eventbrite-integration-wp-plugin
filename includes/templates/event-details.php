@@ -22,6 +22,7 @@ require_once(dirname(__FILE__) . "/js-libraries.php");
 		'evi_event_when_where_tag_id' => get_option('evi_event_when_where_tag_id', null),
 		'evi_enable_scroll_wheel' => get_option('evi_enable_scroll_wheel',null),
 		'evi_map_style' => get_option('evi_map_style',null),
+		'evi_map_style_name' => get_option('evi_map_style_name',null),
 		'evi_marker_icon' => get_option('evi_marker_icon',null) ? wp_get_attachment_thumb_url( get_option('evi_marker_icon') ) : null,
 	]); ?>);
 </script>

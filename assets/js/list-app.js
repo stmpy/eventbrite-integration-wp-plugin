@@ -91,7 +91,7 @@ MapLayout = Marionette.LayoutView.extend({
       });
       if (!_.isEmpty(App.ops.evi_map_style)) {
         styledMap = new google.maps.StyledMapType(JSON.parse(App.ops.evi_map_style), {
-          name: "color me rad"
+          name: App.ops.evi_map_style_name
         });
         this.map.mapTypes.set('map_style', styledMap);
         this.map.setMapTypeId('map_style');

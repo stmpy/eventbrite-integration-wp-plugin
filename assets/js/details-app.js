@@ -67,7 +67,7 @@ Ticket = Backbone.Model.extend({
     sale_ends = moment(attributes.sales_end);
     two_weeks = moment().add(2, 'weeks');
     if (sale_ends.isBefore(two_weeks)) {
-      return this.set('timeleft', 'only ' + two_weeks.diff(sale_ends, 'days') + ' days left at this price');
+      return this.set('timeleft', 'only ' + sale_ends.diff(moment(), 'days') + ' days left at this price');
     } else {
       return this.set('timeleft', 'until ' + sale_ends.format('MMMM Do YYYY'));
     }
@@ -189,7 +189,7 @@ App.drawMap = function(ev) {
     });
     if (!_.isEmpty(App.ops.evi_map_style)) {
       styledMap = new google.maps.StyledMapType(JSON.parse(App.ops.evi_map_style), {
-        name: "color me rad"
+        name: App.ops.evi_map_style_name
       });
       map.mapTypes.set('map_style', styledMap);
       map.setMapTypeId('map_style');
