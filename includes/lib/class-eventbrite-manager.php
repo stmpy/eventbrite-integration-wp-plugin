@@ -62,7 +62,7 @@ class Eventbrite_Manager {
 		$request = Eventbrite_API::call( $endpoint, $params, $id );
 		if( ! get_option('evi_debug', false) ) {
 			$transient_name = $this->get_transient_name( $endpoint, $params );
-			set_transient( $transient_name, $request, get_option('ebi_cache_duration') * 3600 );
+			set_transient( $transient_name, $request, get_option('evi_cache_duration') * 3600 );
 
 			// Register the transient in case we need to flush.
 			$this->register_transient( $transient_name );
@@ -223,7 +223,7 @@ class Eventbrite_Manager {
 	 * @return mixed Transient if found, false if not.
 	 */
 	protected function get_cache( $endpoint, $params ) {
-		return get_transient( $this->get_transient_name( $endpoint, $params ) ); 
+		return get_transient( $this->get_transient_name( $endpoint, $params ) );
 	}
 
 	/**
