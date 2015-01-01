@@ -8,6 +8,10 @@ Event = Backbone.Model.extend
 		start.formatted = mStart.format('dddd, MMMM Do, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz')
 		@set 'start', start
 
+EventView = Marionette.ItemView.extend
+	initialize: (options) ->
+		@template = options.template if options.template
+
 ### LINKING ###
 Link = Backbone.Model.extend
 	initialize: (attributes) ->
@@ -15,14 +19,14 @@ Link = Backbone.Model.extend
 
 LinkList = Backbone.Collection.extend model: Link
 
-LinkView = Marionette.ItemView.extend
-	template: (attributes) ->
-		Handlebars.compile(jQuery(App.event_links.el).html())(attributes) + '<br />'
-	# '<a href="{{url}}"><i class="{{icon}}"></i>{{text}}</a>'
-
 EventLinks = Marionette.CollectionView.extend
 	className: 'event-buttons'
-	childView: LinkView
+	childView: EventView
+	initialize: (options) ->
+		@template = options.template if options.template
+
+	childViewOptions: ->
+		template: @template
 
 NoEvent = Marionette.ItemView.extend
 	template: Handlebars.compile '<h3>Unable to Find event please refresh the page or try again.</h3>'
@@ -41,22 +45,17 @@ Ticket = Backbone.Model.extend
 		if sale_ends.isBefore two_weeks
 			@set 'timeleft', 'only ' + two_weeks.diff(sale_ends, 'days') + ' days left at this price'
 		else
-			@set 'timeleft', 'until ' + sale_ends.format 'MMMM Mo YYYY'
+			@set 'timeleft', 'until ' + sale_ends.format 'MMMM Do YYYY'
 
 Tickets = Backbone.Collection.extend model: Ticket
 
-TicketView = Marionette.ItemView.extend
-	template: (attributes) ->
-		Handlebars.compile(jQuery(App.event_tickets.el).html())(attributes) + '<br />'
-	# template: Handlebars.compile '{{name}}: {{#if free}} FREE {{else}} {{ cost.display }} {{/if}}'
 TicketsView = Marionette.CollectionView.extend
-	childView: TicketView
+	childView: EventView
+	initialize: (options) ->
+		@template = options.template if options.template
 
-
-### When Where ###
-WhenWhereView = Marionette.ItemView.extend
-	template: (attributes) ->
-		Handlebars.compile(jQuery(App.event_when_where.el).html())(attributes)
+	childViewOptions: ->
+		template: @template
 
 App.hideRegForm = ->
 	jQuery('.eventbrite-event-private').each (i, e) ->
@@ -86,30 +85,37 @@ App.displayLinks = (ev) ->
 				icon_name: 'icomoon-cog'
 				text: 'Manage your team'
 			]
+			template: (attributes) ->
+				Handlebars.compile(jQuery(e).html())(attributes) + '<br />'
 		).render().el
 	@hideRegForm()
 
 ### Settings ###
-EventDetails = Marionette.ItemView.extend
-	template: (attributes) ->
-		Handlebars.compile(jQuery(App.event_settings.el).html())(attributes)
+EventDetails = Marionette.ItemView.extend {}
 
 App.displayTickets = (ev) ->
 	@event_tickets.$el.each (i, e) ->
 		jQuery(e).html (new TicketsView
-			collection: new Tickets ev.get('tickets')
+			collection: new Tickets ev.get('tickets').filter (ticket) ->
+				moment(ticket.sales_start).isBefore(moment().add(2, 'weeks'), 'day')
+			template: (attributes) ->
+				Handlebars.compile(jQuery(e).html())(attributes) + '<br />'
 		).render().el
 
 App.displayWhenWhere = (ev) ->
-	@event_when_where.$el.each (i,e) ->
-		jQuery(e).html (new WhenWhereView
+	@event_when_where.$el.each (i, e) ->
+		jQuery(e).html (new EventView
 			model: ev
+			template: (attributes) ->
+				Handlebars.compile(jQuery(e).html())(attributes)
 		).render().el
 
 App.displaySettings = (ev) ->
 	@event_settings.$el.each (i, e) ->
 		jQuery(e).html (new EventDetails
 			model: ev
+			template: (attributes) ->
+				Handlebars.compile(jQuery(e).html())(attributes)
 		).render().el
 
 App.drawMap = (ev) ->

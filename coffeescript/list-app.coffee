@@ -157,7 +157,7 @@ MapLayout = Marionette.LayoutView.extend
 				# ev.proximity
 				google.maps.geometry.spherical.computeDistanceBetween(myLocation, new google.maps.LatLng(ev.venue.latitude, ev.venue.longitude)) * 0.00062137
 
-			App.nearby.show new CategoryLayout categories: { 'Closest to Furthest': evs.models }
+			App.nearby.show new CategoryLayout categories: { 'Closest to Furthest': evs.models.slice(0,3) }
 
 		# @drawMarker myLocation
 
@@ -191,9 +191,7 @@ App.addInitializer (options) ->
 		noSort: new Events @events_raw
 
 	grouped_byDate = @events['byDate'].groupBy (ev,i) ->
-		console.log ev.get('post_title') + ': ' + moment(ev.get('start').local).format("MMMM Do YYYY")
 		moment(ev.get('start').local).format("MMMM YYYY")
-	console.log grouped_byDate
 	@upcoming.show new CategoryLayout categories: grouped_byDate if @upcoming
 
 	grouped_byCity = @events['byCity'].groupBy (ev,i) ->

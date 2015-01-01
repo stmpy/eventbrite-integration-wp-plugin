@@ -1,4 +1,4 @@
-var App, Event, EventDetails, EventLinks, Link, LinkList, LinkView, NoEvent, Ticket, TicketView, Tickets, TicketsView, WhenWhereView;
+var App, Event, EventDetails, EventLinks, EventView, Link, LinkList, NoEvent, Ticket, Tickets, TicketsView;
 
 App = new Marionette.Application;
 
@@ -10,6 +10,14 @@ Event = Backbone.Model.extend({
     mEnd = moment(attributes.end.local);
     start.formatted = mStart.format('dddd, MMMM Do, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz');
     return this.set('start', start);
+  }
+});
+
+EventView = Marionette.ItemView.extend({
+  initialize: function(options) {
+    if (options.template) {
+      return this.template = options.template;
+    }
   }
 });
 
@@ -26,15 +34,19 @@ LinkList = Backbone.Collection.extend({
   model: Link
 });
 
-LinkView = Marionette.ItemView.extend({
-  template: function(attributes) {
-    return Handlebars.compile(jQuery(App.event_links.el).html())(attributes) + '<br />';
-  }
-});
-
 EventLinks = Marionette.CollectionView.extend({
   className: 'event-buttons',
-  childView: LinkView
+  childView: EventView,
+  initialize: function(options) {
+    if (options.template) {
+      return this.template = options.template;
+    }
+  },
+  childViewOptions: function() {
+    return {
+      template: this.template
+    };
+  }
 });
 
 NoEvent = Marionette.ItemView.extend({
@@ -57,7 +69,7 @@ Ticket = Backbone.Model.extend({
     if (sale_ends.isBefore(two_weeks)) {
       return this.set('timeleft', 'only ' + two_weeks.diff(sale_ends, 'days') + ' days left at this price');
     } else {
-      return this.set('timeleft', 'until ' + sale_ends.format('MMMM Mo YYYY'));
+      return this.set('timeleft', 'until ' + sale_ends.format('MMMM Do YYYY'));
     }
   }
 });
@@ -66,22 +78,17 @@ Tickets = Backbone.Collection.extend({
   model: Ticket
 });
 
-TicketView = Marionette.ItemView.extend({
-  template: function(attributes) {
-    return Handlebars.compile(jQuery(App.event_tickets.el).html())(attributes) + '<br />';
-  }
-});
-
 TicketsView = Marionette.CollectionView.extend({
-  childView: TicketView
-});
-
-
-/* When Where */
-
-WhenWhereView = Marionette.ItemView.extend({
-  template: function(attributes) {
-    return Handlebars.compile(jQuery(App.event_when_where.el).html())(attributes);
+  childView: EventView,
+  initialize: function(options) {
+    if (options.template) {
+      return this.template = options.template;
+    }
+  },
+  childViewOptions: function() {
+    return {
+      template: this.template
+    };
   }
 });
 
@@ -118,7 +125,10 @@ App.displayLinks = function(ev) {
           icon_name: 'icomoon-cog',
           text: 'Manage your team'
         }
-      ])
+      ]),
+      template: function(attributes) {
+        return Handlebars.compile(jQuery(e).html())(attributes) + '<br />';
+      }
     })).render().el);
   });
   return this.hideRegForm();
@@ -127,24 +137,28 @@ App.displayLinks = function(ev) {
 
 /* Settings */
 
-EventDetails = Marionette.ItemView.extend({
-  template: function(attributes) {
-    return Handlebars.compile(jQuery(App.event_settings.el).html())(attributes);
-  }
-});
+EventDetails = Marionette.ItemView.extend({});
 
 App.displayTickets = function(ev) {
   return this.event_tickets.$el.each(function(i, e) {
     return jQuery(e).html((new TicketsView({
-      collection: new Tickets(ev.get('tickets'))
+      collection: new Tickets(ev.get('tickets').filter(function(ticket) {
+        return moment(ticket.sales_start).isBefore(moment().add(2, 'weeks'), 'day');
+      })),
+      template: function(attributes) {
+        return Handlebars.compile(jQuery(e).html())(attributes) + '<br />';
+      }
     })).render().el);
   });
 };
 
 App.displayWhenWhere = function(ev) {
   return this.event_when_where.$el.each(function(i, e) {
-    return jQuery(e).html((new WhenWhereView({
-      model: ev
+    return jQuery(e).html((new EventView({
+      model: ev,
+      template: function(attributes) {
+        return Handlebars.compile(jQuery(e).html())(attributes);
+      }
     })).render().el);
   });
 };
@@ -152,7 +166,10 @@ App.displayWhenWhere = function(ev) {
 App.displaySettings = function(ev) {
   return this.event_settings.$el.each(function(i, e) {
     return jQuery(e).html((new EventDetails({
-      model: ev
+      model: ev,
+      template: function(attributes) {
+        return Handlebars.compile(jQuery(e).html())(attributes);
+      }
     })).render().el);
   });
 };

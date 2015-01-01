@@ -166,7 +166,7 @@ MapLayout = Marionette.LayoutView.extend({
       }));
       return App.nearby.show(new CategoryLayout({
         categories: {
-          'Closest to Furthest': evs.models
+          'Closest to Furthest': evs.models.slice(0, 3)
         }
       }));
     }
@@ -205,10 +205,8 @@ App.addInitializer(function(options) {
     noSort: new Events(this.events_raw)
   };
   grouped_byDate = this.events['byDate'].groupBy(function(ev, i) {
-    console.log(ev.get('post_title') + ': ' + moment(ev.get('start').local).format("MMMM Do YYYY"));
     return moment(ev.get('start').local).format("MMMM YYYY");
   });
-  console.log(grouped_byDate);
   if (this.upcoming) {
     this.upcoming.show(new CategoryLayout({
       categories: grouped_byDate
