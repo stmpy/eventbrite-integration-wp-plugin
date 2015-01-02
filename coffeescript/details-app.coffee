@@ -28,9 +28,6 @@ EventLinks = Marionette.CollectionView.extend
 	childViewOptions: ->
 		template: @template
 
-NoEvent = Marionette.ItemView.extend
-	template: Handlebars.compile '<h3>Unable to Find event please refresh the page or try again.</h3>'
-
 ### TICKETING ###
 Ticket = Backbone.Model.extend
 	initialize: (attributes) ->
@@ -154,7 +151,13 @@ App.addInitializer (options) ->
 
 	if _.isEmpty(options.event.ID)
 		@hideRegForm()
-		@event_links.show new NoEvent
+		@hidePublicDetails()
+		jQuery('.subheader').html("").prev().html("")
+		if confirm "Unable to Find event, click 'OK' to view all locations,\n click 'CANCEL' to refresh the page."
+			window.location.replace '/locations'
+		else
+			window.location.reload()
+
 		return
 
 	# Set header for event

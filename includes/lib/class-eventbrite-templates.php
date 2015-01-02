@@ -121,7 +121,7 @@
 	 */
 	public function check_templates( $template ) {
 		// If we have an 'eventbrite_id' query var, we're dealing with an event single view.
-		if ( get_query_var( get_option('evi_event_id_variable', 'event_id' ) ) ) {
+		if ( get_the_ID() == get_page_by_path(get_option('evi_event_detail_page'))->ID ) {
 			// A default theme is being used; we've got special templates for those.
 			// if ( $this->default_theme_activated() ) {
 			// 	$template = plugin_dir_path( __DIR__ ) . 'tmpl/compat/' . get_template() . '/eventbrite-single.php';

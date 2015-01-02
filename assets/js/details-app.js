@@ -1,4 +1,4 @@
-var App, Event, EventDetails, EventLinks, EventView, Link, LinkList, NoEvent, Ticket, Tickets, TicketsView;
+var App, Event, EventDetails, EventLinks, EventView, Link, LinkList, Ticket, Tickets, TicketsView;
 
 App = new Marionette.Application;
 
@@ -47,10 +47,6 @@ EventLinks = Marionette.CollectionView.extend({
       template: this.template
     };
   }
-});
-
-NoEvent = Marionette.ItemView.extend({
-  template: Handlebars.compile('<h3>Unable to Find event please refresh the page or try again.</h3>')
 });
 
 
@@ -221,7 +217,13 @@ App.addInitializer(function(options) {
   ev = new Event(options.event);
   if (_.isEmpty(options.event.ID)) {
     this.hideRegForm();
-    this.event_links.show(new NoEvent);
+    this.hidePublicDetails();
+    jQuery('.subheader').html("").prev().html("");
+    if (confirm("Unable to Find event, click 'OK' to view all locations,\n click 'CANCEL' to refresh the page.")) {
+      window.location.replace('/locations');
+    } else {
+      window.location.reload();
+    }
     return;
   }
   jQuery('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('venue').address.city + ", " + ev.get('venue').address.region);
