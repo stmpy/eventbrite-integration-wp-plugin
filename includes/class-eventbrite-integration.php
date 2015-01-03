@@ -91,10 +91,20 @@ class Eventbrite_Integration {
 		$this->dir = dirname( $this->file );
 		$this->assets_dir = trailingslashit( $this->dir ) . 'assets';
 		$this->assets_url = esc_url( trailingslashit( plugins_url( '/assets/', $this->file ) ) );
+		$this->vendor_url = esc_url( trailingslashit( plugins_url( '/includes/templates/vendor/', $this->file ) ) );
 
-		$this->script_suffix = ''; //defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+		$this->script_suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		register_activation_hook( $this->file, array( $this, 'install' ) );
+
+		// Load frontend JS & CSS
+		// add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ), 10 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ), 10 );
+
+		// Load admin JS & CSS
+		// add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_styles' ), 10, 1 );
+		// add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ), 10, 1 );
+
 
 		// Load API for generic admin functions
 		if ( is_admin() ) {
@@ -139,6 +149,60 @@ class Eventbrite_Integration {
 
 		return $taxonomy;
 	}
+
+	/**
+	 * Load frontend CSS.
+	 * @access  public
+	 * @since   1.0.0
+	 * @return void
+	 */
+	public function enqueue_styles () {
+		wp_register_style( $this->_token . '-frontend', esc_url( $this->assets_url ) . 'css/frontend.css', array(), $this->_version );
+		wp_enqueue_style( $this->_token . '-frontend' );
+	} // End enqueue_styles ()
+
+	/**
+	 * Load frontend Javascript.
+	 * @access  public
+	 * @since   1.0.0
+	 * @return  void
+	 */
+	public function enqueue_scripts () {
+		wp_register_script('marionette', esc_url( $this->vendor_url ) . '/marionette/lib/backbone.marionette' . $this->script_suffix . '.js' , array('backbone','jquery'),'2.2.2');
+		wp_register_script('moment', esc_url( $this->vendor_url ) . '/moment/'  . (empty($this->script_suffix) ? '' : $this->script_suffix .'/') . 'moment' . $this->script_suffix . '.js' , array(),'2.8.4');
+		wp_register_script('handlebars', esc_url( $this->vendor_url ) . '/handlebars/handlebars' . $this->script_suffix . '.js' , array(),'2.0.0');
+		wp_register_script('google-maps',"https://maps.googleapis.com/maps/api/js?region=".get_option('evi_google_api_region')."&libraries=geometry&key=".get_option('evi_google_api_key'),array(),'3.0');
+		wp_register_script( $this->_token . '-frontend', esc_url( $this->assets_url ) . 'js/frontend' . $this->script_suffix . '.js', array(
+			'jquery',
+			'marionette',
+			'moment',
+			'handlebars',
+			'google-maps'
+		), $this->_version );
+		wp_enqueue_script( $this->_token . '-frontend' );
+	} // End enqueue_scripts ()
+
+	/**
+	 * Load admin CSS.
+	 * @access  public
+	 * @since   1.0.0
+	 * @return  void
+	 */
+	public function admin_enqueue_styles ( $hook = '' ) {
+		wp_register_style( $this->_token . '-admin', esc_url( $this->assets_url ) . 'css/admin.css', array(), $this->_version );
+		wp_enqueue_style( $this->_token . '-admin' );
+	} // End admin_enqueue_styles ()
+
+	/**
+	 * Load admin Javascript.
+	 * @access  public
+	 * @since   1.0.0
+	 * @return  void
+	 */
+	public function admin_enqueue_scripts ( $hook = '' ) {
+		wp_register_script( $this->_token . '-admin', esc_url( $this->assets_url ) . 'js/admin' . $this->script_suffix . '.js', array( 'jquery' ), $this->_version );
+		wp_enqueue_script( $this->_token . '-admin' );
+	} // End admin_enqueue_scripts ()
 
 	/**
 	 * Load plugin localisation

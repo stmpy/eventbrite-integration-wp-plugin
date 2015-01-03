@@ -6,14 +6,11 @@
 ?>
 
 <?php if ( get_query_var( get_option('evi_event_id_variable', 'event_id' ) ) ): ?>
-	<?php require_once(dirname(__FILE__) . "/js-libraries.php"); ?>
+	<?php require_once(get_template_directory() . '/page.php'); ?>>
 	<?php $event = new Eventbrite_Query( array( 'p' => get_query_var( 'event_id' ) ) ); ?>
-	<script type="text/javascript" src="<?= plugins_url('assets/js/details-app.js', plugin_dir_path( dirname(__FILE__) ) ); ?>"></script>
 	<script type="text/javascript">
-		$.noConflict();
-		jQuery( document ).ready(function( $ ) {
-			App.$ = $;
-			App.start(<?= json_encode([
+		var data = {
+			event: <?= json_encode([
 				'event' => $event->have_posts() ? $event->post : null,
 				'evi_event_links_tag_id' => get_option('evi_event_links_tag_id', null),
 				'evi_event_tickets_tag_id' => get_option('evi_event_tickets_tag_id', null),
@@ -24,10 +21,9 @@
 				'evi_map_style' => get_option('evi_map_style',null),
 				'evi_map_style_name' => get_option('evi_map_style_name',null),
 				'evi_marker_icon' => get_option('evi_marker_icon',null) ? wp_get_attachment_thumb_url( get_option('evi_marker_icon') ) : null,
-			]); ?>);
-		});
+			]); ?>
+		};
 	</script>
-	<?php require_once(get_template_directory() . '/page.php'); ?>
 
 <?php else:
 	wp_redirect('//' . $_SERVER['HTTP_HOST'] . '/locations');

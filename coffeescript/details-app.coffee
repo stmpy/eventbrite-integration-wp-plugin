@@ -1,4 +1,4 @@
-App = new Marionette.Application
+EventApp = new Marionette.Application
 
 Event = Backbone.Model.extend
 	initialize: (attributes) ->
@@ -27,7 +27,7 @@ EventLinks = Marionette.CollectionView.extend
 
 	onRender: ->
 		@$el.children().each (i, e) ->
-			($link = App.$(e).find('a')).attr('onclick',"_gaq.push(['_link', '" + $link.attr('href') + "']); return false;")
+			($link = EventApp.$(e).find('a')).attr('onclick',"_gaq.push(['_link', '" + $link.attr('href') + "']); return false;")
 
 	childViewOptions: ->
 		template: @template
@@ -58,17 +58,17 @@ TicketsView = Marionette.CollectionView.extend
 	childViewOptions: ->
 		template: @template
 
-App.showRegForm = ->
-	App.$('.eventbrite-event-private').each (i, e) ->
-		App.$(e).show()
+EventApp.showRegForm = ->
+	EventApp.$('.eventbrite-event-private').each (i, e) ->
+		EventApp.$(e).show()
 
-App.showPublicDetails = ->
-	App.$('.eventbrite-event-public').each (i,e) ->
-		App.$(e).show()
+EventApp.showPublicDetails = ->
+	EventApp.$('.eventbrite-event-public').each (i,e) ->
+		EventApp.$(e).show()
 
-App.displayLinks = (ev) ->
+EventApp.displayLinks = (ev) ->
 	@event_links.$el.each (i, e) ->
-		App.$(e).html (new EventLinks
+		EventApp.$(e).html (new EventLinks
 			collection: new LinkList [
 				url: ev.get('url') + '?team_reg_type=individual'
 				icon_name: 'icomoon-user'
@@ -87,49 +87,49 @@ App.displayLinks = (ev) ->
 				text: 'Manage your team'
 			]
 			template: (attributes) ->
-				Handlebars.compile(App.$(e).html())(attributes) + '<br />'
+				Handlebars.compile(EventApp.$(e).html())(attributes) + '<br />'
 		).render().el
 
 ### Settings ###
 EventDetails = Marionette.ItemView.extend {}
 
-App.displayTickets = (ev) ->
+EventApp.displayTickets = (ev) ->
 	@event_tickets.$el.each (i, e) ->
-		App.$(e).html (new TicketsView
+		EventApp.$(e).html (new TicketsView
 			collection: new Tickets ev.get('tickets').filter (ticket) ->
 				moment(ticket.sales_start).isBefore(moment().add(2, 'weeks'), 'day')
 			template: (attributes) ->
-				Handlebars.compile(App.$(e).html())(attributes) + '<br />'
+				Handlebars.compile(EventApp.$(e).html())(attributes) + '<br />'
 		).render().el
 
-App.displayWhenWhere = (ev) ->
+EventApp.displayWhenWhere = (ev) ->
 	@event_when_where.$el.each (i, e) ->
-		App.$(e).html (new EventView
+		EventApp.$(e).html (new EventView
 			model: ev
 			template: (attributes) ->
-				Handlebars.compile(App.$(e).html())(attributes)
+				Handlebars.compile(EventApp.$(e).html())(attributes)
 		).render().el
 
-App.displaySettings = (ev) ->
+EventApp.displaySettings = (ev) ->
 	@event_settings.$el.each (i, e) ->
-		App.$(e).html (new EventDetails
+		EventApp.$(e).html (new EventDetails
 			model: ev
 			template: (attributes) ->
-				Handlebars.compile(App.$(e).html())(attributes)
+				Handlebars.compile(EventApp.$(e).html())(attributes)
 		).render().el
 
-App.drawMap = (ev) ->
+EventApp.drawMap = (ev) ->
 	location = new google.maps.LatLng(ev.get('venue').latitude, ev.get('venue').longitude)
 	@map.$el.each (i, e) ->
 		map = new google.maps.Map e,
 			zoom: 11
 			center: location
-			scrollwheel: App.ops.evi_enable_scroll_wheel
+			scrollwheel: EventApp.ops.evi_enable_scroll_wheel
 			mapTypeControlOptions:
 				mapTypeIds: [ google.maps.MapTypeId.ROADMAP, 'map_style']
 
-		unless _.isEmpty(App.ops.evi_map_style)
-			styledMap = new google.maps.StyledMapType JSON.parse(App.ops.evi_map_style), { name: App.ops.evi_map_style_name }
+		unless _.isEmpty(EventApp.ops.evi_map_style)
+			styledMap = new google.maps.StyledMapType JSON.parse(EventApp.ops.evi_map_style), { name: EventApp.ops.evi_map_style_name }
 			map.mapTypes.set 'map_style', styledMap
 			map.setMapTypeId 'map_style'
 
@@ -138,22 +138,22 @@ App.drawMap = (ev) ->
 			position: location
 			animation: google.maps.Animation.DROP
 
-		settings.icon = App.ops.evi_marker_icon if App.ops.evi_marker_icon
+		settings.icon = EventApp.ops.evi_marker_icon if EventApp.ops.evi_marker_icon
 
 		new google.maps.Marker settings
 
-App.addInitializer (options) ->
+EventApp.addInitializer (options) ->
 	# console.log options.event
 	@ops = options
 	r = {}
 	for region in ['event_links', 'event_tickets', 'event_when_where', 'map', 'event_settings']
-		r[region] = options['evi_' + region + '_tag_id'] if App.$(options['evi_' + region + '_tag_id']).length > 0
+		r[region] = options['evi_' + region + '_tag_id'] if EventApp.$(options['evi_' + region + '_tag_id']).length > 0
 	@addRegions r
 
 	ev = new Event options.event
 
 	if _.isEmpty(options.event.ID)
-		App.$('.subheader').html("").prev().html("")
+		EventApp.$('.subheader').html("").prev().html("")
 		if confirm "Unable to Find event, click 'OK' to view all locations,\n click 'CANCEL' to refresh the page."
 			window.location.replace '/locations'
 		else
@@ -162,7 +162,7 @@ App.addInitializer (options) ->
 		return
 
 	# Set header for event
-	App.$('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('venue').address.city + ", " +ev.get('venue').address.region)
+	EventApp.$('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('venue').address.city + ", " +ev.get('venue').address.region)
 
 	@displayWhenWhere(ev) if @event_when_where
 	@displaySettings(ev) if @event_settings
@@ -174,3 +174,7 @@ App.addInitializer (options) ->
 		@displayTickets(ev) if @event_tickets
 	else
 		@showRegForm()
+
+jQuery( document ).ready ($) ->
+	EventApp.$ = $
+	EventApp.start(data.event) unless _.isUndefined(data.event);

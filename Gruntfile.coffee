@@ -11,6 +11,16 @@ module.exports = (grunt) ->
         dest: "./assets/js"
         ext: ".js"
 
+    concat:
+      app:
+        src: ['./assets/js/list-app.js','./assets/js/details-app.js']
+        dest: './assets/js/frontend.js'
+
+    uglify:
+      app:
+        src: './assets/js/frontend.js'
+        dest: './assets/js/frontend.min.js'
+
     watch:
       coffeescript:
         files: ["./coffeescript/*.coffee"]
@@ -18,6 +28,8 @@ module.exports = (grunt) ->
 
   grunt.loadNpmTasks "grunt-contrib-watch"
   grunt.loadNpmTasks "grunt-contrib-coffee"
+  grunt.loadNpmTasks "grunt-contrib-concat"
+  grunt.loadNpmTasks "grunt-contrib-uglify"
   grunt.loadNpmTasks "grunt-notify"
 
-  grunt.registerTask "default", "coffee"
+  grunt.registerTask "default", ["coffee","concat","uglify"]
