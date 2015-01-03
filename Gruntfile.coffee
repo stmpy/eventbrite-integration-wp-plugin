@@ -24,7 +24,7 @@ module.exports = (grunt) ->
     watch:
       coffeescript:
         files: ["./coffeescript/*.coffee"]
-        tasks: ["coffee:app"]
+        tasks: ["coffee:app","concat:app"]
 
   grunt.loadNpmTasks "grunt-contrib-watch"
   grunt.loadNpmTasks "grunt-contrib-coffee"

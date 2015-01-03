@@ -93,7 +93,7 @@ class Eventbrite_Integration {
 		$this->assets_url = esc_url( trailingslashit( plugins_url( '/assets/', $this->file ) ) );
 		$this->vendor_url = esc_url( trailingslashit( plugins_url( '/includes/templates/vendor/', $this->file ) ) );
 
-		$this->script_suffix = '.min'; //defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+		$this->script_suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		register_activation_hook( $this->file, array( $this, 'install' ) );
 

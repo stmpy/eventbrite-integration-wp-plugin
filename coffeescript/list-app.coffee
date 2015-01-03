@@ -1,4 +1,4 @@
-EventsApp = new Marionette.Application
+EventListApp = new Marionette.Application
 	regions:
 		application: '.main-content'
 
@@ -12,10 +12,10 @@ EventsApp = new Marionette.Application
 # ##     ##  #######  ########  ######## ########  ######
 
 
-Event = Backbone.Model.extend
+EventListModel = Backbone.Model.extend
 	initialize: ->
-		@set 'local_url', '/' + EventsApp.ops.evi_event_detail_page + '/?' + EventsApp.ops.evi_event_id_variable + '=' + @get 'ID'
-Events = Backbone.Collection.extend model: Event
+		@set 'local_url', '/' + EventListApp.ops.evi_event_detail_page + '/?' + EventListApp.ops.evi_event_id_variable + '=' + @get 'ID'
+Events = Backbone.Collection.extend model: EventListModel
 
 Tab = Backbone.Model.extend {}
 Tabs = Backbone.Collection.extend model: Tab
@@ -33,7 +33,7 @@ Tabs = Backbone.Collection.extend model: Tab
 EventView = Marionette.ItemView.extend
 	className: 'eventbrite-event'
 	template: (attributes) ->
-		_.template(EventsApp.ops.evi_event_template)(attributes)
+		_.template(EventListApp.ops.evi_event_template)(attributes)
 
 ThirdColumnView = Marionette.CollectionView.extend
 	className: 'vc_span4 wpb_column column_container col no-extra-padding'
@@ -86,15 +86,15 @@ MapLayout = Marionette.LayoutView.extend
 		self = this
 
 		if _.isUndefined(@map)
-			@map = new google.maps.Map EventsApp.map.el,
+			@map = new google.maps.Map EventListApp.map.el,
 				zoom: 4
 				center: new google.maps.LatLng(37.09024, -95.712891);
-				scrollwheel: EventsApp.ops.evi_enable_scroll_wheel
+				scrollwheel: EventListApp.ops.evi_enable_scroll_wheel
 				mapTypeControlOptions:
 					mapTypeIds: [ google.maps.MapTypeId.ROADMAP, 'map_style']
 
-			unless _.isEmpty(EventsApp.ops.evi_map_style)
-				styledMap = new google.maps.StyledMapType JSON.parse(EventsApp.ops.evi_map_style), { name: EventsApp.ops.evi_map_style_name }
+			unless _.isEmpty(EventListApp.ops.evi_map_style)
+				styledMap = new google.maps.StyledMapType JSON.parse(EventListApp.ops.evi_map_style), { name: EventListApp.ops.evi_map_style_name }
 				@map.mapTypes.set 'map_style', styledMap
 				@map.setMapTypeId 'map_style'
 
@@ -119,7 +119,7 @@ MapLayout = Marionette.LayoutView.extend
 			animation: google.maps.Animation.DROP
 
 		settings.url = url if url
-		settings.icon = EventsApp.ops.evi_marker_icon if EventsApp.ops.evi_marker_icon
+		settings.icon = EventListApp.ops.evi_marker_icon if EventListApp.ops.evi_marker_icon
 
 		@markers.push (marker = new google.maps.Marker settings)
 
@@ -139,7 +139,7 @@ MapLayout = Marionette.LayoutView.extend
 	# Method 2 IP lookup
 	_ipLocate: ->
 		# https://ipinfo.io
-		EventsApp.$.ajax "http://ipinfo.io",
+		EventListApp.$.ajax "http://ipinfo.io",
 			context: this
 			success: (location) ->
 				lat_lng = location.loc.split(',')
@@ -151,13 +151,13 @@ MapLayout = Marionette.LayoutView.extend
 		@map.setCenter myLocation
 		@map.setZoom 6
 
-		if EventsApp.nearby
-			evs = new Events _.sortBy EventsApp.events_raw, (ev) ->
+		if EventListApp.nearby
+			evs = new Events _.sortBy EventListApp.events_raw, (ev) ->
 				### ev.proximity = ###
 				# ev.proximity
 				google.maps.geometry.spherical.computeDistanceBetween(myLocation, new google.maps.LatLng(ev.venue.latitude, ev.venue.longitude)) * 0.00062137
 
-			EventsApp.nearby.show new CategoryLayout categories: { 'Closest to Furthest': evs.models.slice(0,3) }
+			EventListApp.nearby.show new CategoryLayout categories: { 'Closest to Furthest': evs.models.slice(0,3) }
 
 		# @drawMarker myLocation
 
@@ -169,13 +169,13 @@ MapLayout = Marionette.LayoutView.extend
 # ##     ## ##        ##
 # ##     ## ##        ##
 
-EventsApp.addInitializer (options) ->
+EventListApp.addInitializer (options) ->
 
 	@ops = options
 
 	r = {}
 	for region in ['upcoming', 'alphabetical', 'nearby', 'map']
-		r[region] = options['evi_' + region + '_tag_id'] if EventsApp.$(options['evi_' + region + '_tag_id']).length > 0
+		r[region] = options['evi_' + region + '_tag_id'] if EventListApp.$(options['evi_' + region + '_tag_id']).length > 0
 	@addRegions r
 
 	# filter out events that do not match the organizer id
@@ -203,6 +203,6 @@ EventsApp.addInitializer (options) ->
 	@map.show new MapLayout evnts: @events['noSort'] if @map
 
 
-jQuery( document ).ready ($) ->
-	EventsApp.$ = $
-	EventsApp.start(data.events) unless _.isUndefined(data.events);
+jQuery( document ).on 'load-events', (e, options = {}) ->
+	EventListApp.$ = jQuery
+	EventListApp.start(options)

@@ -1,6 +1,6 @@
 EventApp = new Marionette.Application
 
-Event = Backbone.Model.extend
+EventModel = Backbone.Model.extend
 	initialize: (attributes) ->
 		start = attributes.start
 		mStart = moment(start.local)
@@ -143,14 +143,14 @@ EventApp.drawMap = (ev) ->
 		new google.maps.Marker settings
 
 EventApp.addInitializer (options) ->
-	# console.log options.event
+
 	@ops = options
 	r = {}
 	for region in ['event_links', 'event_tickets', 'event_when_where', 'map', 'event_settings']
 		r[region] = options['evi_' + region + '_tag_id'] if EventApp.$(options['evi_' + region + '_tag_id']).length > 0
 	@addRegions r
 
-	ev = new Event options.event
+	ev = new EventModel options.event
 
 	if _.isEmpty(options.event.ID)
 		EventApp.$('.subheader').html("").prev().html("")
@@ -175,6 +175,6 @@ EventApp.addInitializer (options) ->
 	else
 		@showRegForm()
 
-jQuery( document ).ready ($) ->
-	EventApp.$ = $
-	EventApp.start(data.event) unless _.isUndefined(data.event);
+jQuery( document ).on 'load-event', (e, options = {}) ->
+	EventApp.$ = jQuery
+	EventApp.start(options)

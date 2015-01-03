@@ -1,8 +1,8 @@
-var Event, EventApp, EventDetails, EventLinks, EventView, Link, LinkList, Ticket, Tickets, TicketsView;
+var EventApp, EventDetails, EventLinks, EventModel, EventView, Link, LinkList, Ticket, Tickets, TicketsView;
 
 EventApp = new Marionette.Application;
 
-Event = Backbone.Model.extend({
+EventModel = Backbone.Model.extend({
   initialize: function(attributes) {
     var mEnd, mStart, start;
     start = attributes.start;
@@ -219,7 +219,7 @@ EventApp.addInitializer(function(options) {
     }
   }
   this.addRegions(r);
-  ev = new Event(options.event);
+  ev = new EventModel(options.event);
   if (_.isEmpty(options.event.ID)) {
     EventApp.$('.subheader').html("").prev().html("");
     if (confirm("Unable to Find event, click 'OK' to view all locations,\n click 'CANCEL' to refresh the page.")) {
@@ -252,9 +252,10 @@ EventApp.addInitializer(function(options) {
   }
 });
 
-jQuery(document).ready(function($) {
-  EventApp.$ = $;
-  if (!_.isUndefined(data.event)) {
-    return EventApp.start(data.event);
+jQuery(document).on('load-event', function(e, options) {
+  if (options == null) {
+    options = {};
   }
+  EventApp.$ = jQuery;
+  return EventApp.start(options);
 });

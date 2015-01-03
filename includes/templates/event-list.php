@@ -15,8 +15,10 @@
 ))); ?>
 <?php if ( is_object($events) && $events->have_posts() ) : ?>
 	<script type="text/javascript">
-		var data = {
-			events: <?= json_encode([
+		// don't trigger until the document is loaded
+		jQuery( document ).ready(function( $ ) {
+			// once loaded then trigger load-events
+			jQuery( document ).trigger('load-events',<?= json_encode([
 				'events' => $events->posts,
 				'evi_event_detail_page' => get_option('evi_event_detail_page',null),
 				'evi_event_id_variable' => get_option('evi_event_id_variable',null),
@@ -31,7 +33,7 @@
 				'evi_map_style' => get_option('evi_map_style',null),
 				'evi_map_style_name' => get_option('evi_map_style_name',null),
 				'evi_marker_icon' => get_option('evi_marker_icon',null) ? wp_get_attachment_thumb_url( get_option('evi_marker_icon') ) : null,
-			]); ?>
-		};
+			]); ?>);
+		});
 	</script>
 <?php endif; ?>

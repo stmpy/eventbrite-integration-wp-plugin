@@ -9,8 +9,11 @@
 	<?php require_once(get_template_directory() . '/page.php'); ?>>
 	<?php $event = new Eventbrite_Query( array( 'p' => get_query_var( 'event_id' ) ) ); ?>
 	<script type="text/javascript">
-		var data = {
-			event: <?= json_encode([
+		// don't trigger until the document is loaded
+		jQuery( document ).ready(function() {
+			console.log('doc ready');
+			// once loaded then trigger load-events
+			jQuery( document ).trigger('load-event',<?= json_encode([
 				'event' => $event->have_posts() ? $event->post : null,
 				'evi_event_links_tag_id' => get_option('evi_event_links_tag_id', null),
 				'evi_event_tickets_tag_id' => get_option('evi_event_tickets_tag_id', null),
@@ -21,8 +24,8 @@
 				'evi_map_style' => get_option('evi_map_style',null),
 				'evi_map_style_name' => get_option('evi_map_style_name',null),
 				'evi_marker_icon' => get_option('evi_marker_icon',null) ? wp_get_attachment_thumb_url( get_option('evi_marker_icon') ) : null,
-			]); ?>
-		};
+			]); ?>);
+		});
 	</script>
 
 <?php else:

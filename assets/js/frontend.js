@@ -1,19 +1,19 @@
-var CategoryLayout, ColumnLayout, Event, EventView, Events, EventsApp, MapLayout, Tab, Tabs, ThirdColumnView;
+var CategoryLayout, ColumnLayout, EventListApp, EventListModel, EventView, Events, MapLayout, Tab, Tabs, ThirdColumnView;
 
-EventsApp = new Marionette.Application({
+EventListApp = new Marionette.Application({
   regions: {
     application: '.main-content'
   }
 });
 
-Event = Backbone.Model.extend({
+EventListModel = Backbone.Model.extend({
   initialize: function() {
-    return this.set('local_url', '/' + EventsApp.ops.evi_event_detail_page + '/?' + EventsApp.ops.evi_event_id_variable + '=' + this.get('ID'));
+    return this.set('local_url', '/' + EventListApp.ops.evi_event_detail_page + '/?' + EventListApp.ops.evi_event_id_variable + '=' + this.get('ID'));
   }
 });
 
 Events = Backbone.Collection.extend({
-  model: Event
+  model: EventListModel
 });
 
 Tab = Backbone.Model.extend({});
@@ -25,7 +25,7 @@ Tabs = Backbone.Collection.extend({
 EventView = Marionette.ItemView.extend({
   className: 'eventbrite-event',
   template: function(attributes) {
-    return _.template(EventsApp.ops.evi_event_template)(attributes);
+    return _.template(EventListApp.ops.evi_event_template)(attributes);
   }
 });
 
@@ -81,17 +81,17 @@ MapLayout = Marionette.LayoutView.extend({
     var self, styledMap;
     self = this;
     if (_.isUndefined(this.map)) {
-      this.map = new google.maps.Map(EventsApp.map.el, {
+      this.map = new google.maps.Map(EventListApp.map.el, {
         zoom: 4,
         center: new google.maps.LatLng(37.09024, -95.712891),
-        scrollwheel: EventsApp.ops.evi_enable_scroll_wheel,
+        scrollwheel: EventListApp.ops.evi_enable_scroll_wheel,
         mapTypeControlOptions: {
           mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
         }
       });
-      if (!_.isEmpty(EventsApp.ops.evi_map_style)) {
-        styledMap = new google.maps.StyledMapType(JSON.parse(EventsApp.ops.evi_map_style), {
-          name: EventsApp.ops.evi_map_style_name
+      if (!_.isEmpty(EventListApp.ops.evi_map_style)) {
+        styledMap = new google.maps.StyledMapType(JSON.parse(EventListApp.ops.evi_map_style), {
+          name: EventListApp.ops.evi_map_style_name
         });
         this.map.mapTypes.set('map_style', styledMap);
         this.map.setMapTypeId('map_style');
@@ -123,8 +123,8 @@ MapLayout = Marionette.LayoutView.extend({
     if (url) {
       settings.url = url;
     }
-    if (EventsApp.ops.evi_marker_icon) {
-      settings.icon = EventsApp.ops.evi_marker_icon;
+    if (EventListApp.ops.evi_marker_icon) {
+      settings.icon = EventListApp.ops.evi_marker_icon;
     }
     this.markers.push((marker = new google.maps.Marker(settings)));
     return google.maps.event.addListener(marker, 'click', function() {
@@ -143,7 +143,7 @@ MapLayout = Marionette.LayoutView.extend({
     }
   },
   _ipLocate: function() {
-    return EventsApp.$.ajax("http://ipinfo.io", {
+    return EventListApp.$.ajax("http://ipinfo.io", {
       context: this,
       success: function(location) {
         var lat_lng;
@@ -158,13 +158,13 @@ MapLayout = Marionette.LayoutView.extend({
     myLocation = new google.maps.LatLng(parseFloat(lat), parseFloat(lng));
     this.map.setCenter(myLocation);
     this.map.setZoom(6);
-    if (EventsApp.nearby) {
-      evs = new Events(_.sortBy(EventsApp.events_raw, function(ev) {
+    if (EventListApp.nearby) {
+      evs = new Events(_.sortBy(EventListApp.events_raw, function(ev) {
 
         /* ev.proximity = */
         return google.maps.geometry.spherical.computeDistanceBetween(myLocation, new google.maps.LatLng(ev.venue.latitude, ev.venue.longitude)) * 0.00062137;
       }));
-      return EventsApp.nearby.show(new CategoryLayout({
+      return EventListApp.nearby.show(new CategoryLayout({
         categories: {
           'Closest to Furthest': evs.models.slice(0, 3)
         }
@@ -173,14 +173,14 @@ MapLayout = Marionette.LayoutView.extend({
   }
 });
 
-EventsApp.addInitializer(function(options) {
+EventListApp.addInitializer(function(options) {
   var grouped_byCity, grouped_byDate, r, region, _i, _len, _ref;
   this.ops = options;
   r = {};
   _ref = ['upcoming', 'alphabetical', 'nearby', 'map'];
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     region = _ref[_i];
-    if (EventsApp.$(options['evi_' + region + '_tag_id']).length > 0) {
+    if (EventListApp.$(options['evi_' + region + '_tag_id']).length > 0) {
       r[region] = options['evi_' + region + '_tag_id'];
     }
   }
@@ -234,18 +234,19 @@ EventsApp.addInitializer(function(options) {
   }
 });
 
-jQuery(document).ready(function($) {
-  EventsApp.$ = $;
-  if (!_.isUndefined(data.events)) {
-    return EventsApp.start(data.events);
+jQuery(document).on('load-events', function(e, options) {
+  if (options == null) {
+    options = {};
   }
+  EventListApp.$ = jQuery;
+  return EventListApp.start(options);
 });
 
-var Event, EventApp, EventDetails, EventLinks, EventView, Link, LinkList, Ticket, Tickets, TicketsView;
+var EventApp, EventDetails, EventLinks, EventModel, EventView, Link, LinkList, Ticket, Tickets, TicketsView;
 
 EventApp = new Marionette.Application;
 
-Event = Backbone.Model.extend({
+EventModel = Backbone.Model.extend({
   initialize: function(attributes) {
     var mEnd, mStart, start;
     start = attributes.start;
@@ -462,7 +463,7 @@ EventApp.addInitializer(function(options) {
     }
   }
   this.addRegions(r);
-  ev = new Event(options.event);
+  ev = new EventModel(options.event);
   if (_.isEmpty(options.event.ID)) {
     EventApp.$('.subheader').html("").prev().html("");
     if (confirm("Unable to Find event, click 'OK' to view all locations,\n click 'CANCEL' to refresh the page.")) {
@@ -495,9 +496,10 @@ EventApp.addInitializer(function(options) {
   }
 });
 
-jQuery(document).ready(function($) {
-  EventApp.$ = $;
-  if (!_.isUndefined(data.event)) {
-    return EventApp.start(data.event);
+jQuery(document).on('load-event', function(e, options) {
+  if (options == null) {
+    options = {};
   }
+  EventApp.$ = jQuery;
+  return EventApp.start(options);
 });
