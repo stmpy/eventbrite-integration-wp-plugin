@@ -139,7 +139,7 @@ MapLayout = Marionette.LayoutView.extend
 	# Method 2 IP lookup
 	_ipLocate: ->
 		# https://ipinfo.io
-		jQuery.ajax "http://ipinfo.io",
+		App.$.ajax "http://ipinfo.io",
 			context: this
 			success: (location) ->
 				lat_lng = location.loc.split(',')
@@ -175,7 +175,7 @@ App.addInitializer (options) ->
 
 	r = {}
 	for region in ['upcoming', 'alphabetical', 'nearby', 'map']
-		r[region] = options['evi_' + region + '_tag_id'] if jQuery(options['evi_' + region + '_tag_id']).length > 0
+		r[region] = options['evi_' + region + '_tag_id'] if App.$(options['evi_' + region + '_tag_id']).length > 0
 	@addRegions r
 
 	# filter out events that do not match the organizer id

@@ -143,7 +143,7 @@ MapLayout = Marionette.LayoutView.extend({
     }
   },
   _ipLocate: function() {
-    return jQuery.ajax("http://ipinfo.io", {
+    return App.$.ajax("http://ipinfo.io", {
       context: this,
       success: function(location) {
         var lat_lng;
@@ -180,7 +180,7 @@ App.addInitializer(function(options) {
   _ref = ['upcoming', 'alphabetical', 'nearby', 'map'];
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     region = _ref[_i];
-    if (jQuery(options['evi_' + region + '_tag_id']).length > 0) {
+    if (App.$(options['evi_' + region + '_tag_id']).length > 0) {
       r[region] = options['evi_' + region + '_tag_id'];
     }
   }

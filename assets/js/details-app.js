@@ -88,21 +88,21 @@ TicketsView = Marionette.CollectionView.extend({
   }
 });
 
-App.hideRegForm = function() {
-  return jQuery('.eventbrite-event-private').each(function(i, e) {
-    return jQuery(e).hide();
+App.showRegForm = function() {
+  return App.$('.eventbrite-event-private').each(function(i, e) {
+    return App.$(e).show();
   });
 };
 
-App.hidePublicDetails = function() {
-  return jQuery('.eventbrite-event-public').each(function(i, e) {
-    return jQuery(e).hide();
+App.showPublicDetails = function() {
+  return App.$('.eventbrite-event-public').each(function(i, e) {
+    return App.$(e).show();
   });
 };
 
 App.displayLinks = function(ev) {
-  this.event_links.$el.each(function(i, e) {
-    return jQuery(e).html((new EventLinks({
+  return this.event_links.$el.each(function(i, e) {
+    return App.$(e).html((new EventLinks({
       collection: new LinkList([
         {
           url: ev.get('url') + '?team_reg_type=individual',
@@ -123,11 +123,10 @@ App.displayLinks = function(ev) {
         }
       ]),
       template: function(attributes) {
-        return Handlebars.compile(jQuery(e).html())(attributes) + '<br />';
+        return Handlebars.compile(App.$(e).html())(attributes) + '<br />';
       }
     })).render().el);
   });
-  return this.hideRegForm();
 };
 
 
@@ -137,12 +136,12 @@ EventDetails = Marionette.ItemView.extend({});
 
 App.displayTickets = function(ev) {
   return this.event_tickets.$el.each(function(i, e) {
-    return jQuery(e).html((new TicketsView({
+    return App.$(e).html((new TicketsView({
       collection: new Tickets(ev.get('tickets').filter(function(ticket) {
         return moment(ticket.sales_start).isBefore(moment().add(2, 'weeks'), 'day');
       })),
       template: function(attributes) {
-        return Handlebars.compile(jQuery(e).html())(attributes) + '<br />';
+        return Handlebars.compile(App.$(e).html())(attributes) + '<br />';
       }
     })).render().el);
   });
@@ -150,10 +149,10 @@ App.displayTickets = function(ev) {
 
 App.displayWhenWhere = function(ev) {
   return this.event_when_where.$el.each(function(i, e) {
-    return jQuery(e).html((new EventView({
+    return App.$(e).html((new EventView({
       model: ev,
       template: function(attributes) {
-        return Handlebars.compile(jQuery(e).html())(attributes);
+        return Handlebars.compile(App.$(e).html())(attributes);
       }
     })).render().el);
   });
@@ -161,10 +160,10 @@ App.displayWhenWhere = function(ev) {
 
 App.displaySettings = function(ev) {
   return this.event_settings.$el.each(function(i, e) {
-    return jQuery(e).html((new EventDetails({
+    return App.$(e).html((new EventDetails({
       model: ev,
       template: function(attributes) {
-        return Handlebars.compile(jQuery(e).html())(attributes);
+        return Handlebars.compile(App.$(e).html())(attributes);
       }
     })).render().el);
   });
@@ -202,6 +201,10 @@ App.drawMap = function(ev) {
   });
 };
 
+App.checkLaunch = function() {
+  return console.log('oHai!');
+};
+
 App.addInitializer(function(options) {
   var ev, r, region, _i, _len, _ref;
   this.ops = options;
@@ -209,16 +212,14 @@ App.addInitializer(function(options) {
   _ref = ['event_links', 'event_tickets', 'event_when_where', 'map', 'event_settings'];
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     region = _ref[_i];
-    if (jQuery(options['evi_' + region + '_tag_id']).length > 0) {
+    if (App.$(options['evi_' + region + '_tag_id']).length > 0) {
       r[region] = options['evi_' + region + '_tag_id'];
     }
   }
   this.addRegions(r);
   ev = new Event(options.event);
   if (_.isEmpty(options.event.ID)) {
-    this.hideRegForm();
-    this.hidePublicDetails();
-    jQuery('.subheader').html("").prev().html("");
+    App.$('.subheader').html("").prev().html("");
     if (confirm("Unable to Find event, click 'OK' to view all locations,\n click 'CANCEL' to refresh the page.")) {
       window.location.replace('/locations');
     } else {
@@ -226,7 +227,7 @@ App.addInitializer(function(options) {
     }
     return;
   }
-  jQuery('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('venue').address.city + ", " + ev.get('venue').address.region);
+  App.$('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('venue').address.city + ", " + ev.get('venue').address.region);
   if (this.event_when_where) {
     this.displayWhenWhere(ev);
   }
@@ -237,7 +238,7 @@ App.addInitializer(function(options) {
     this.drawMap(ev);
   }
   if (ev.get('public')) {
-    this.hideRegForm();
+    this.showPublicDetails();
     if (this.event_links) {
       this.displayLinks(ev);
     }
@@ -245,6 +246,7 @@ App.addInitializer(function(options) {
       return this.displayTickets(ev);
     }
   } else {
-    return this.hidePublicDetails();
+    console.log('oHai!');
+    return this.showRegForm();
   }
 });

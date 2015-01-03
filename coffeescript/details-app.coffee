@@ -54,17 +54,17 @@ TicketsView = Marionette.CollectionView.extend
 	childViewOptions: ->
 		template: @template
 
-App.hideRegForm = ->
-	jQuery('.eventbrite-event-private').each (i, e) ->
-		jQuery(e).hide()
+App.showRegForm = ->
+	App.$('.eventbrite-event-private').each (i, e) ->
+		App.$(e).show()
 
-App.hidePublicDetails = ->
-	jQuery('.eventbrite-event-public').each (i,e) ->
-		jQuery(e).hide()
+App.showPublicDetails = ->
+	App.$('.eventbrite-event-public').each (i,e) ->
+		App.$(e).show()
 
 App.displayLinks = (ev) ->
 	@event_links.$el.each (i, e) ->
-		jQuery(e).html (new EventLinks
+		App.$(e).html (new EventLinks
 			collection: new LinkList [
 				url: ev.get('url') + '?team_reg_type=individual'
 				icon_name: 'icomoon-user'
@@ -83,36 +83,35 @@ App.displayLinks = (ev) ->
 				text: 'Manage your team'
 			]
 			template: (attributes) ->
-				Handlebars.compile(jQuery(e).html())(attributes) + '<br />'
+				Handlebars.compile(App.$(e).html())(attributes) + '<br />'
 		).render().el
-	@hideRegForm()
 
 ### Settings ###
 EventDetails = Marionette.ItemView.extend {}
 
 App.displayTickets = (ev) ->
 	@event_tickets.$el.each (i, e) ->
-		jQuery(e).html (new TicketsView
+		App.$(e).html (new TicketsView
 			collection: new Tickets ev.get('tickets').filter (ticket) ->
 				moment(ticket.sales_start).isBefore(moment().add(2, 'weeks'), 'day')
 			template: (attributes) ->
-				Handlebars.compile(jQuery(e).html())(attributes) + '<br />'
+				Handlebars.compile(App.$(e).html())(attributes) + '<br />'
 		).render().el
 
 App.displayWhenWhere = (ev) ->
 	@event_when_where.$el.each (i, e) ->
-		jQuery(e).html (new EventView
+		App.$(e).html (new EventView
 			model: ev
 			template: (attributes) ->
-				Handlebars.compile(jQuery(e).html())(attributes)
+				Handlebars.compile(App.$(e).html())(attributes)
 		).render().el
 
 App.displaySettings = (ev) ->
 	@event_settings.$el.each (i, e) ->
-		jQuery(e).html (new EventDetails
+		App.$(e).html (new EventDetails
 			model: ev
 			template: (attributes) ->
-				Handlebars.compile(jQuery(e).html())(attributes)
+				Handlebars.compile(App.$(e).html())(attributes)
 		).render().el
 
 App.drawMap = (ev) ->
@@ -144,15 +143,13 @@ App.addInitializer (options) ->
 	@ops = options
 	r = {}
 	for region in ['event_links', 'event_tickets', 'event_when_where', 'map', 'event_settings']
-		r[region] = options['evi_' + region + '_tag_id'] if jQuery(options['evi_' + region + '_tag_id']).length > 0
+		r[region] = options['evi_' + region + '_tag_id'] if App.$(options['evi_' + region + '_tag_id']).length > 0
 	@addRegions r
 
 	ev = new Event options.event
 
 	if _.isEmpty(options.event.ID)
-		@hideRegForm()
-		@hidePublicDetails()
-		jQuery('.subheader').html("").prev().html("")
+		App.$('.subheader').html("").prev().html("")
 		if confirm "Unable to Find event, click 'OK' to view all locations,\n click 'CANCEL' to refresh the page."
 			window.location.replace '/locations'
 		else
@@ -161,15 +158,15 @@ App.addInitializer (options) ->
 		return
 
 	# Set header for event
-	jQuery('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('venue').address.city + ", " +ev.get('venue').address.region)
+	App.$('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('venue').address.city + ", " +ev.get('venue').address.region)
 
 	@displayWhenWhere(ev) if @event_when_where
 	@displaySettings(ev) if @event_settings
 	@drawMap(ev) if @map
 
 	if ev.get('public')
-		@hideRegForm()
+		@showPublicDetails()
 		@displayLinks(ev) if @event_links
 		@displayTickets(ev) if @event_tickets
 	else
-		@hidePublicDetails()
+		@showRegForm()
