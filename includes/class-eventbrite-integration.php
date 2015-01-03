@@ -93,7 +93,7 @@ class Eventbrite_Integration {
 		$this->assets_url = esc_url( trailingslashit( plugins_url( '/assets/', $this->file ) ) );
 		$this->vendor_url = esc_url( trailingslashit( plugins_url( '/includes/templates/vendor/', $this->file ) ) );
 
-		$this->script_suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+		$this->script_suffix = '.min'; //defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		register_activation_hook( $this->file, array( $this, 'install' ) );
 
@@ -169,7 +169,7 @@ class Eventbrite_Integration {
 	 */
 	public function enqueue_scripts () {
 		wp_register_script('marionette', esc_url( $this->vendor_url ) . '/marionette/lib/backbone.marionette' . $this->script_suffix . '.js' , array('backbone','jquery'),'2.2.2');
-		wp_register_script('moment', esc_url( $this->vendor_url ) . '/moment/'  . (empty($this->script_suffix) ? '' : $this->script_suffix .'/') . 'moment' . $this->script_suffix . '.js' , array(),'2.8.4');
+		wp_register_script('moment', esc_url( $this->vendor_url ) . '/moment/'  . (empty($this->script_suffix) ? '' : substr($this->script_suffix,1) .'/') . 'moment' . $this->script_suffix . '.js' , array(),'2.8.4');
 		wp_register_script('handlebars', esc_url( $this->vendor_url ) . '/handlebars/handlebars' . $this->script_suffix . '.js' , array(),'2.0.0');
 		wp_register_script('google-maps',"https://maps.googleapis.com/maps/api/js?region=".get_option('evi_google_api_region')."&libraries=geometry&key=".get_option('evi_google_api_key'),array(),'3.0');
 		wp_register_script( $this->_token . '-frontend', esc_url( $this->assets_url ) . 'js/frontend' . $this->script_suffix . '.js', array(
