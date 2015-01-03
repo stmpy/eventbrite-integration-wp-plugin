@@ -25,6 +25,10 @@ EventLinks = Marionette.CollectionView.extend
 	initialize: (options) ->
 		@template = options.template if options.template
 
+	onRender: ->
+		@$el.children().each (i, e) ->
+			($link = App.$(e).find('a')).attr('onclick',"_gaq.push(['_link', '" + $link.attr('href') + "']); return false;")
+
 	childViewOptions: ->
 		template: @template
 

@@ -42,6 +42,12 @@ EventLinks = Marionette.CollectionView.extend({
       return this.template = options.template;
     }
   },
+  onRender: function() {
+    return this.$el.children().each(function(i, e) {
+      var $link;
+      return ($link = App.$(e).find('a')).attr('onclick', "_gaq.push(['_link', '" + $link.attr('href') + "']); return false;");
+    });
+  },
   childViewOptions: function() {
     return {
       template: this.template
@@ -201,10 +207,6 @@ App.drawMap = function(ev) {
   });
 };
 
-App.checkLaunch = function() {
-  return console.log('oHai!');
-};
-
 App.addInitializer(function(options) {
   var ev, r, region, _i, _len, _ref;
   this.ops = options;
@@ -246,7 +248,6 @@ App.addInitializer(function(options) {
       return this.displayTickets(ev);
     }
   } else {
-    console.log('oHai!');
     return this.showRegForm();
   }
 });
