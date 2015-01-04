@@ -205,6 +205,20 @@ class Eventbrite_Integration_Settings {
 				)
 			)
 		);
+		$settings['ipinfo'] = array(
+			'title'					=> __( 'IP Info API', 'eventbrite-integration' ),
+			'description'			=> __( 'The following settings are used to query ipinfo ip locationing service' ),
+			'fields'				=> array(
+				array(
+					'id' 			=> 'ipinfo_token',
+					'label'			=> __( 'API Token' , 'eventbrite-integration' ),
+					'description'	=> __( 'The token provided by <a href="https://ipinfo.io/pricing">ipinfo</a> to increase daily query limits', 'eventbrite-integration' ),
+					'type'			=> 'text',
+					'default'		=> '',
+					'placeholder'	=> __( '', 'eventbrite-integration' )
+				),
+			)
+		);
 		$settings['ids'] = array(
 			'title'					=> __( 'IDs', 'eventbrite-integration' ),
 			'description'			=> __( 'IDs of elements to insert application information.', 'eventbrite-integration' ),

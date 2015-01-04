@@ -143,7 +143,7 @@ MapLayout = Marionette.LayoutView.extend({
     }
   },
   _ipLocate: function() {
-    return EventListApp.$.ajax("http://ipinfo.io", {
+    return EventListApp.$.ajax("http://ipinfo.io" + (_.isEmpty(EventListApp.ops.evi_ipinfo_token) ? "" : "?token=" + EventListApp.ops.evi_ipinfo_token), {
       context: this,
       success: function(location) {
         var lat_lng;

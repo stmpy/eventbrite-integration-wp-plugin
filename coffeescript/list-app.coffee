@@ -139,7 +139,7 @@ MapLayout = Marionette.LayoutView.extend
 	# Method 2 IP lookup
 	_ipLocate: ->
 		# https://ipinfo.io
-		EventListApp.$.ajax "http://ipinfo.io",
+		EventListApp.$.ajax "http://ipinfo.io" + (if _.isEmpty(EventListApp.ops.evi_ipinfo_token) then "" else "?token=" + EventListApp.ops.evi_ipinfo_token),
 			context: this
 			success: (location) ->
 				lat_lng = location.loc.split(',')
