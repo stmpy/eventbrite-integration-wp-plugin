@@ -119,6 +119,14 @@ class Eventbrite_Integration_Settings {
 					'default'		=> 'false'
 				),
 				array(
+					'id' 			=> 'support_email',
+					'label'			=> __( 'Support Emails' , 'eventbrite-integration' ),
+					'description'	=> __( 'A comma separated list of email address that will receive errors within the plugin', 'eventbrite-integration' ),
+					'type'			=> 'text',
+					'default'		=> '',
+					'placeholder'	=> __( 'name@domain.com', 'eventbrite-integration' )
+				),
+				array(
 					'id' 			=> 'organizer_id',
 					'label'			=> __( 'Organizer ID' , 'eventbrite-integration' ),
 					'description'	=> __( 'You can find this on this page <a href="https://www.eventbrite.com/myprofile/">https://www.eventbrite.com/myprofile/</a>.', 'eventbrite-integration' ),

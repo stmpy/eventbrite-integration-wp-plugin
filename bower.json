@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "marionette": "~2.2.2",
-    "moment": "~2.8.4",
-    "handlebars": "~2.0.0",
+    "moment": "~2.9.0",
+    "handlebars": "~2.0.0"
   }
 }

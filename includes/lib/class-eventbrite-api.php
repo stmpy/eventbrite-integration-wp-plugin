@@ -96,8 +96,39 @@ class Eventbrite_API extends Keyring_Service_Eventbrite {
 		} else {
 			return new WP_Error( '500', 'Method ' . $method . ' is not implemented in the Eventbrite API.' );
 		}
-		
-		$response = self::$instance->request( $endpoint_url, $params );
+
+		$attempt = 1;
+		$attemptMax = 3;
+		while( $attempt <= $attemptMax ) {
+			$response = self::$instance->request( $endpoint_url, $params );
+			if( ! is_wp_error($response) ) { break; } // if no error, then leave while loop
+			ob_start();
+			foreach($response->get_error_codes() as $code) {
+				echo "<h1>" . $code . "</h1>";
+				echo "<h3>Attempt " . $attempt . " of " . $attemptMax . "</h3>";
+				var_dump($response->get_error_messages($code));
+				echo "<br/><br/>\r\n";
+			}
+			$output = ob_get_clean();
+			$recipients = array(
+				get_option('admin_email')
+			);
+			if(get_option('evi_support_email', null)) {
+				if(stripos(get_option('evi_support_email'),',') !== false) {
+					$support = array_map('trim', explode(',', get_option('evi_support_email')));
+					$recipients = array_merge($recipients,$support);
+				} else {
+					$recipients[] = get_option('evi_support_email');
+				}
+			}
+			wp_mail( $recipients, 'Keyring Response Error', $output, array(
+				"From: " . get_option('admin_email'),
+				"MIME-Version: 1.0",
+				"Content-Type: text/html; charset=ISO-8859-1"
+			));
+			$attempt++;
+		}
+		// check if there was an error and try again
 		return $response;
 	}
 

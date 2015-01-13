@@ -144,7 +144,7 @@ EventApp.displayTickets = function(ev) {
   return this.event_tickets.$el.each(function(i, e) {
     return EventApp.$(e).html((new TicketsView({
       collection: new Tickets(ev.get('tickets').filter(function(ticket) {
-        return moment(ticket.sales_start).isBefore(moment().add(2, 'weeks'), 'day');
+        return moment().isBetween(moment(ticket.sales_start).subtract(2, 'weeks'), moment(ticket.sales_end), 'day');
       })),
       template: function(attributes) {
         return Handlebars.compile(EventApp.$(e).html())(attributes) + '<br />';

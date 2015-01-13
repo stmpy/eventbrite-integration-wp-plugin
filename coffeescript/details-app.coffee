@@ -97,7 +97,7 @@ EventApp.displayTickets = (ev) ->
 	@event_tickets.$el.each (i, e) ->
 		EventApp.$(e).html (new TicketsView
 			collection: new Tickets ev.get('tickets').filter (ticket) ->
-				moment(ticket.sales_start).isBefore(moment().add(2, 'weeks'), 'day')
+				moment().isBetween(moment(ticket.sales_start).subtract(2, 'weeks'),moment(ticket.sales_end), 'day')
 			template: (attributes) ->
 				Handlebars.compile(EventApp.$(e).html())(attributes) + '<br />'
 		).render().el

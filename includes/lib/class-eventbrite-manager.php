@@ -38,6 +38,7 @@ class Eventbrite_Manager {
 	 * @return object Request results
 	 */
 	public function request( $endpoint, $params = array(), $id = false, $force = false ) {
+		$force = $force || get_option('evi_debug', false);
 		// Make sure the endpoint and parameters are valid.
 		if ( ! $this->validate_endpoint_params( $endpoint, $params ) ) {
 			return false;
@@ -51,22 +52,18 @@ class Eventbrite_Manager {
 		}
 
 		// Return a cached result if we have one.
-		if ( ! ( get_option('evi_debug', false) || $force ) ) {
-			$cached = $this->get_cache( $endpoint, $params );
-			if ( ! empty( $cached ) ) {
-				return $cached;
-			}
+		$cached = $this->get_cache( $endpoint, $params );
+		if ( ! $force && $cached !== false ) {
+			return $cached;
 		}
 
 		// Make a fresh request and cache it.
 		$request = Eventbrite_API::call( $endpoint, $params, $id );
-		if( ! get_option('evi_debug', false) ) {
-			$transient_name = $this->get_transient_name( $endpoint, $params );
-			set_transient( $transient_name, $request, get_option('evi_cache_duration') * 3600 );
+		$transient_name = $this->get_transient_name( $endpoint, $params );
+		set_transient( $transient_name, $request, get_option('evi_cache_duration') * 3600 );
 
-			// Register the transient in case we need to flush.
-			$this->register_transient( $transient_name );
-		}
+		// Register the transient in case we need to flush.
+		$this->register_transient( $transient_name );
 
 		return $request;
 	}
