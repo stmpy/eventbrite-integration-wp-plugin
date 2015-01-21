@@ -118,14 +118,6 @@ class Eventbrite_Query extends WP_Query {
 	protected function set_api_params() {
 		$params = array();
 
-		// Add 'page' parameter if we need events above the first 50.
-		if ( 5 < $this->query_vars['paged'] ) {
-			/**
-			 * The API returns pages of 50, and we currently only support a fixed number of 10 events per WordPress page.
-			 */
-			$params['page'] = ceil( $this->query_vars['paged'] / 5 );
-		}
-
 		// We need the Eventbrite user ID if we're getting only public events.
 		if ( ! isset( $this->query_vars['display_private'] ) || true !== $this->query_vars['display_private'] ) {
 			$params['user.id'] = Eventbrite_API::$instance->get_token()->get_meta( 'user_id' );

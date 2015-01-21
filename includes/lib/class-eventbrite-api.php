@@ -97,37 +97,76 @@ class Eventbrite_API extends Keyring_Service_Eventbrite {
 			return new WP_Error( '500', 'Method ' . $method . ' is not implemented in the Eventbrite API.' );
 		}
 
-		$attempt = 1;
-		$attemptMax = 3;
-		while( $attempt <= $attemptMax ) {
-			$response = self::$instance->request( $endpoint_url, $params );
-			if( ! is_wp_error($response) ) { break; } // if no error, then leave while loop
-			ob_start();
+		return self::attemptRequest($endpoint_url, $query_params, 3);
+	}
+
+	public static function attemptRequest($endpoint_url, $query_params, $attemptMax = 3, $attempt = 1) {
+		$response = self::$instance->request( $endpoint_url, array_merge($query_params,array('timeout' => 10)) );
+
+		if( is_wp_error($response) ) {
 			foreach($response->get_error_codes() as $code) {
-				echo "<h1>" . $code . "</h1>";
-				echo "<h3>Attempt " . $attempt . " of " . $attemptMax . "</h3>";
-				var_dump($response->get_error_messages($code));
-				echo "<br/><br/>\r\n";
-			}
-			$output = ob_get_clean();
-			$recipients = array(
-				get_option('admin_email')
-			);
-			if(get_option('evi_support_email', null)) {
-				if(stripos(get_option('evi_support_email'),',') !== false) {
-					$support = array_map('trim', explode(',', get_option('evi_support_email')));
-					$recipients = array_merge($recipients,$support);
-				} else {
-					$recipients[] = get_option('evi_support_email');
+				$r = $response->get_error_messages($code);
+
+				// check if max attempts made or response is a 404
+				if($attempt >= $attemptMax || ($code == 404)) {
+					return self::emailError($endpoint_url, $query_params, $response);
 				}
 			}
-			wp_mail( $recipients, 'Keyring Response Error', $output, array(
-				"From: " . get_option('admin_email'),
-				"MIME-Version: 1.0",
-				"Content-Type: text/html; charset=ISO-8859-1"
-			));
-			$attempt++;
+
+			// try again
+			return self::attemptRequest($endpoint_url, $query_params, $attemptMax, ++$attempt);
+		} elseif (is_object($response) && ! get_option('evi_enable_pagination',true)) {
+
+			// multiple pages ... I need them all for the final response
+			if(isset($response->pagination) && ((integer) $response->pagination->page_count > 1 && (integer) $response->pagination->page_number == 1)) {
+				$unpagedResponse = $response;
+				$pagination = $response->pagination;
+				unset($unpagedResponse->pagination);
+
+				// get all consecutive pages after page 1 (which is the default returned page)
+				for($i = 2; $i <= (integer) $pagination->page_count; $i++) {
+					$endpoint_url = add_query_arg( ['page' => $i ], $endpoint_url);
+					$resp = self::attemptRequest($endpoint_url,$query_params, $attemptMax);
+					unset($resp->pagination);
+					$unpagedResponse = (object) array_merge_recursive((array) $unpagedResponse, (array) $resp);
+				}
+				$response = $unpagedResponse;
+			}
 		}
+
+		// no error
+		return $response;
+	}
+
+	public static function emailError($endpoint_url, $query_params, $response) {
+		ob_start();
+			echo "<pre><h3>Endpoint: " . $endpoint_url . "</h3>";
+			if(isset($_SERVER['HTTP_REFERER'])) { echo "<h4>referrer: " . $_SERVER['HTTP_REFERER'] . '</h4>'; }
+			var_dump($query_params);
+			echo "<h3>Errors</h3>";
+			foreach($response->get_error_codes() as $code) {
+				echo "<h4>" . $code . "</h4>";
+				var_dump($response->get_error_messages($code));
+				echo "</pre><br/><br/>\r\n";
+			}
+		$output = ob_get_clean();
+		echo $output;
+		$recipients = array(
+			get_option('admin_email')
+		);
+		if(get_option('evi_support_email', null)) {
+			if(stripos(get_option('evi_support_email'),',') !== false) {
+				$support = array_map('trim', explode(',', get_option('evi_support_email')));
+				$recipients = array_merge($recipients,$support);
+			} else {
+				$recipients[] = get_option('evi_support_email');
+			}
+		}
+		wp_mail( $recipients, 'Keyring Response Error', $output, array(
+			"From: " . get_option('admin_email'),
+			"MIME-Version: 1.0",
+			"Content-Type: text/html; charset=ISO-8859-1"
+		));
 		// check if there was an error and try again
 		return $response;
 	}

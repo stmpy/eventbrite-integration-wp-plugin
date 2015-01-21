@@ -119,6 +119,13 @@ class Eventbrite_Integration_Settings {
 					'default'		=> 'false'
 				),
 				array(
+					'id' 			=> 'enable_pagination',
+					'label'			=> __( 'Enable Pagination', 'wordpress-plugin-template' ),
+					'description'	=> __( 'if checked then eventbrite will be queried in the typical manner of 50 events per request. If disabled a collectionfor every request, nothing is cached' ),
+					'type'			=> 'checkbox',
+					'default'		=> 'true'
+				),
+				array(
 					'id' 			=> 'support_email',
 					'label'			=> __( 'Support Emails' , 'eventbrite-integration' ),
 					'description'	=> __( 'A comma separated list of email address that will receive errors within the plugin', 'eventbrite-integration' ),
