@@ -102,6 +102,7 @@ class Eventbrite_API extends Keyring_Service_Eventbrite {
 
 	public static function attemptRequest($endpoint_url, $query_params, $attemptMax = 3, $attempt = 1) {
 		$response = self::$instance->request( $endpoint_url, array_merge($query_params,array('timeout' => 10)) );
+		// $response = new WP_Error('oHai!', 'some awesome error');
 
 		if( is_wp_error($response) ) {
 			foreach($response->get_error_codes() as $code) {
@@ -140,17 +141,21 @@ class Eventbrite_API extends Keyring_Service_Eventbrite {
 
 	public static function emailError($endpoint_url, $query_params, $response) {
 		ob_start();
-			echo "<pre><h3>Endpoint: " . $endpoint_url . "</h3>";
+			echo "<pre><h3>URL: " . $_SERVER['REQUEST_URI'] . "</h3>";
+			echo "<h3>Endpoint: " . $endpoint_url . "</h3>";
 			if(isset($_SERVER['HTTP_REFERER'])) { echo "<h4>referrer: " . $_SERVER['HTTP_REFERER'] . '</h4>'; }
 			var_dump($query_params);
 			echo "<h3>Errors</h3>";
 			foreach($response->get_error_codes() as $code) {
 				echo "<h4>" . $code . "</h4>";
-				var_dump($response->get_error_messages($code));
-				echo "</pre><br/><br/>\r\n";
+				foreach($response->get_error_messages($code) as $error) {
+					print_r($error['body']);
+				}
 			}
+			echo "<h3>_SERVER Vars</h3>";
+			print_r($_SERVER);
+			echo "</pre>";
 		$output = ob_get_clean();
-		echo $output;
 		$recipients = array(
 			get_option('admin_email')
 		);
