@@ -5,6 +5,7 @@
   "dependencies": {
     "marionette": "~2.2.2",
     "moment": "~2.9.0",
-    "handlebars": "~2.0.0"
+    "handlebars": "~2.0.0",
+    "store": "~2.1.6"
   }
 }

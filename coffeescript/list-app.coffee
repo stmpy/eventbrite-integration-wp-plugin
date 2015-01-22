@@ -130,11 +130,16 @@ MapLayout = Marionette.LayoutView.extend
 	_geoLocate: ->
 		# Get visitor location
 		# https://developer.mozilla.org/en-US/docs/Web/API/Geolocation.getCurrentPosition
-		unless _.isUndefined(navigator.geolocation.getCurrentPosition)
+		if _.isUndefined(navigator.geolocation.getCurrentPosition)
+			@_ipLocate()
+		else
 			self = this
-			navigator.geolocation.getCurrentPosition (position) ->
-				self._setMyLocation position.coords.latitude, position.coords.longitude
-			, (error) -> self._ipLocate()
+			if store.get('geolocate:lat') and store.get('geolocate:lng')
+				@_setMyLocation store.get('geolocate:lat'), store.get('geolocate:lng'), false
+			else
+				navigator.geolocation.getCurrentPosition (position) ->
+					self._setMyLocation position.coords.latitude, position.coords.longitude
+				, (error) -> self._ipLocate()
 
 	# Method 2 IP lookup
 	_ipLocate: ->
@@ -143,10 +148,14 @@ MapLayout = Marionette.LayoutView.extend
 			context: this
 			success: (location) ->
 				lat_lng = location.loc.split(',')
-				@_setMyLocation parseFloat(lat_lng[0]), parseFloat(lat_lng[1])
+				@_setMyLocation lat_lng[0], lat_lng[1]
 			dataType: "jsonp"
 
-	_setMyLocation: (lat,lng) ->
+	_setMyLocation: (lat, lng, update = true) ->
+		if update
+			store.set 'geolocate:lat', parseFloat(lat)
+			store.set 'geolocate:lng', parseFloat(lng)
+
 		myLocation = new google.maps.LatLng parseFloat(lat), parseFloat(lng)
 		@map.setCenter myLocation
 		@map.setZoom 6

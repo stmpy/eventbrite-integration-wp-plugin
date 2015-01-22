@@ -133,13 +133,19 @@ MapLayout = Marionette.LayoutView.extend({
   },
   _geoLocate: function() {
     var self;
-    if (!_.isUndefined(navigator.geolocation.getCurrentPosition)) {
+    if (_.isUndefined(navigator.geolocation.getCurrentPosition)) {
+      return this._ipLocate();
+    } else {
       self = this;
-      return navigator.geolocation.getCurrentPosition(function(position) {
-        return self._setMyLocation(position.coords.latitude, position.coords.longitude);
-      }, function(error) {
-        return self._ipLocate();
-      });
+      if (store.get('geolocate:lat') && store.get('geolocate:lng')) {
+        return this._setMyLocation(store.get('geolocate:lat'), store.get('geolocate:lng'), false);
+      } else {
+        return navigator.geolocation.getCurrentPosition(function(position) {
+          return self._setMyLocation(position.coords.latitude, position.coords.longitude);
+        }, function(error) {
+          return self._ipLocate();
+        });
+      }
     }
   },
   _ipLocate: function() {
@@ -148,13 +154,20 @@ MapLayout = Marionette.LayoutView.extend({
       success: function(location) {
         var lat_lng;
         lat_lng = location.loc.split(',');
-        return this._setMyLocation(parseFloat(lat_lng[0]), parseFloat(lat_lng[1]));
+        return this._setMyLocation(lat_lng[0], lat_lng[1]);
       },
       dataType: "jsonp"
     });
   },
-  _setMyLocation: function(lat, lng) {
+  _setMyLocation: function(lat, lng, update) {
     var evs, myLocation;
+    if (update == null) {
+      update = true;
+    }
+    if (update) {
+      store.set('geolocate:lat', parseFloat(lat));
+      store.set('geolocate:lng', parseFloat(lng));
+    }
     myLocation = new google.maps.LatLng(parseFloat(lat), parseFloat(lng));
     this.map.setCenter(myLocation);
     this.map.setZoom(6);

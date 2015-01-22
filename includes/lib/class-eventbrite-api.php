@@ -141,9 +141,10 @@ class Eventbrite_API extends Keyring_Service_Eventbrite {
 
 	public static function emailError($endpoint_url, $query_params, $response) {
 		ob_start();
-			echo "<pre><h3>URL: " . $_SERVER['REQUEST_URI'] . "</h3>";
+			echo "<pre><h3>URL: <a href='//" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "'>//" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "</a></h3>";
 			echo "<h3>Endpoint: " . $endpoint_url . "</h3>";
 			if(isset($_SERVER['HTTP_REFERER'])) { echo "<h4>referrer: " . $_SERVER['HTTP_REFERER'] . '</h4>'; }
+			if(isset($_SERVER['HTTP_USER_AGENT'])) { echo "<h4>user agent: " . $_SERVER['HTTP_USER_AGENT'] . '</h4>'; }
 			var_dump($query_params);
 			echo "<h3>Errors</h3>";
 			foreach($response->get_error_codes() as $code) {
@@ -152,8 +153,6 @@ class Eventbrite_API extends Keyring_Service_Eventbrite {
 					print_r($error['body']);
 				}
 			}
-			echo "<h3>_SERVER Vars</h3>";
-			print_r($_SERVER);
 			echo "</pre>";
 		$output = ob_get_clean();
 		$recipients = array(
