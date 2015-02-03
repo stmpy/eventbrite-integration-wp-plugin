@@ -165,6 +165,14 @@ class Eventbrite_Integration_Settings {
 					'default'		=> 'event_id',
 					'placeholder'	=> __( 'Event ID Variable', 'eventbrite-integration' )
 				),
+				array(
+					'id' 			=> 'event_metro_regex',
+					'label'			=> __( 'Event Metro Regex' , 'eventbrite-integration' ),
+					'description' 	=> __( 'The regular expressions used on the event name to extract the metro attribute' ),
+					'type' 			=> 'text',
+					'default'		=> '',
+					'placeholder'	=> __( '', 'eventbrite-integration' ),
+				),
 			)
 		);
 		$settings['google'] = array(

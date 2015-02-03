@@ -261,12 +261,21 @@ EventApp = new Marionette.Application;
 
 EventModel = Backbone.Model.extend({
   initialize: function(attributes) {
-    var mEnd, mStart, start;
+    var expr, mEnd, mStart, match, start;
     start = attributes.start;
     mStart = moment(start.local);
     mEnd = moment(attributes.end.local);
     start.formatted = mStart.format('dddd, MMMM Do, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz');
-    return this.set('start', start);
+    this.set('start', start);
+    if (EventApp.ops.evi_event_metro_regex) {
+      expr = new RegExp(EventApp.ops.evi_event_metro_regex);
+      match = this.get('post_title').match(expr);
+      if (match[1] != null) {
+        return this.set('metro', match[1]);
+      } else {
+        return this.set('metro', this.get('venue').address.city);
+      }
+    }
   }
 });
 

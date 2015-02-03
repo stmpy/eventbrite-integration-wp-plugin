@@ -7,6 +7,13 @@ EventModel = Backbone.Model.extend
 		mEnd = moment(attributes.end.local)
 		start.formatted = mStart.format('dddd, MMMM Do, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz')
 		@set 'start', start
+		if EventApp.ops.evi_event_metro_regex
+			expr = new RegExp(EventApp.ops.evi_event_metro_regex);
+			match = @get('post_title').match(expr)
+			if match[1]?
+				@set 'metro', match[1]
+			else
+				@set 'metro', @get('venue').address.city
 
 EventView = Marionette.ItemView.extend
 	initialize: (options) ->

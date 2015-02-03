@@ -33,7 +33,8 @@
 				'evi_map_style' => get_option('evi_map_style',null),
 				'evi_map_style_name' => get_option('evi_map_style_name',null),
 				'evi_marker_icon' => get_option('evi_marker_icon',null) ? wp_get_attachment_thumb_url( get_option('evi_marker_icon') ) : null,
-				'evi_ipinfo_token' => get_option('evi_ipinfo_token',null)
+				'evi_ipinfo_token' => get_option('evi_ipinfo_token',null),
+				'evi_event_metro_regex' => get_option('evi_event_metro_regex', null),
 			]); ?>);
 		});
 	</script>
