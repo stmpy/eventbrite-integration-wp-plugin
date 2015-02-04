@@ -514,7 +514,7 @@ EventApp.addInitializer(function(options) {
     }
     return;
   }
-  EventApp.$('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('metro') + ", " + ev.get('venue').address.region);
+  EventApp.$('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('metro'));
   if (this.event_when_where) {
     this.displayWhenWhere(ev);
   }

@@ -169,7 +169,7 @@ EventApp.addInitializer (options) ->
 		return
 
 	# Set header for event
-	EventApp.$('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('metro') + ", " +ev.get('venue').address.region)
+	EventApp.$('.subheader').html(moment(ev.get('start').local).format('MMMM Do, YYYY')).prev().html(ev.get('metro'))
 
 	@displayWhenWhere(ev) if @event_when_where
 	@displaySettings(ev) if @event_settings
