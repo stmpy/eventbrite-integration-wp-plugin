@@ -8,7 +8,17 @@ EventListApp = new Marionette.Application({
 
 EventListModel = Backbone.Model.extend({
   initialize: function() {
-    return this.set('local_url', '/' + EventListApp.ops.evi_event_detail_page + '/?' + EventListApp.ops.evi_event_id_variable + '=' + this.get('ID'));
+    var expr, match;
+    this.set('local_url', '/' + EventListApp.ops.evi_event_detail_page + '/?' + EventListApp.ops.evi_event_id_variable + '=' + this.get('ID'));
+    if (EventListApp.ops.evi_event_metro_regex) {
+      expr = new RegExp(EventListApp.ops.evi_event_metro_regex);
+      match = this.get('post_title').match(expr);
+      if ((match != null) && (match[1] != null)) {
+        return this.set('metro', match[1]);
+      } else {
+        return this.set('metro', this.get('venue').address.city);
+      }
+    }
   }
 });
 
@@ -207,13 +217,17 @@ EventListApp.addInitializer(function(options) {
     })),
     byCity: new Events(_.sortBy(this.events_raw, function(ev) {
       var att, v, _j, _len1, _ref1;
-      att = ev;
-      _ref1 = options.evi_alphabetical_event_attribute.split('.');
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        v = _ref1[_j];
-        att = att[v];
+      if (options.evi_alphabetical_event_attribute.indexOf('.') > -1) {
+        att = ev;
+        _ref1 = options.evi_alphabetical_event_attribute.split('.');
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          v = _ref1[_j];
+          att = att[v];
+        }
+        return att.substr(0, 1);
+      } else {
+        return ev[options.evi_alphabetical_event_attribute];
       }
-      return att.substr(0, 1);
     })),
     noSort: new Events(this.events_raw)
   };

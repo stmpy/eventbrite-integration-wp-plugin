@@ -15,6 +15,14 @@ EventListApp = new Marionette.Application
 EventListModel = Backbone.Model.extend
 	initialize: ->
 		@set 'local_url', '/' + EventListApp.ops.evi_event_detail_page + '/?' + EventListApp.ops.evi_event_id_variable + '=' + @get 'ID'
+		if EventListApp.ops.evi_event_metro_regex
+			expr = new RegExp(EventListApp.ops.evi_event_metro_regex);
+			match = @get('post_title').match(expr)
+			if match? and match[1]?
+				@set 'metro', match[1]
+			else
+				@set 'metro', @get('venue').address.city
+
 Events = Backbone.Collection.extend model: EventListModel
 
 Tab = Backbone.Model.extend {}
@@ -194,9 +202,12 @@ EventListApp.addInitializer (options) ->
 	@events =
 		byDate: new Events _.sortBy @events_raw, (ev) -> ev.start.local
 		byCity: new Events _.sortBy @events_raw, (ev) ->
-			att = ev
-			att = att[v] for v in options.evi_alphabetical_event_attribute.split('.')
-			att.substr(0,1)
+			if options.evi_alphabetical_event_attribute.indexOf('.') > -1
+				att = ev
+				att = att[v] for v in options.evi_alphabetical_event_attribute.split('.')
+				return att.substr(0,1)
+			else
+				return ev[options.evi_alphabetical_event_attribute]
 		noSort: new Events @events_raw
 
 	grouped_byDate = @events['byDate'].groupBy (ev,i) ->
