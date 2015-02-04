@@ -199,25 +199,20 @@ EventListApp.addInitializer (options) ->
 	@events_raw = _.filter options.events, (ev) ->
 		return ev.organizer.id == options.evi_organizer_id
 
+	evs = new Events @events_raw
+
 	@events =
-		byDate: new Events _.sortBy @events_raw, (ev) -> ev.start.local
-		byCity: new Events _.sortBy @events_raw, (ev) ->
-			if options.evi_alphabetical_event_attribute.indexOf('.') > -1
-				att = ev
-				att = att[v] for v in options.evi_alphabetical_event_attribute.split('.')
-				return att.substr(0,1)
-			else
-				return ev[options.evi_alphabetical_event_attribute]
-		noSort: new Events @events_raw
+		byDate: new Events evs.sortBy (ev) -> ev.get('start').local
+		byCity: new Events evs.sortBy (ev) ->
+			ev.get(options.evi_alphabetical_event_attribute)
+		noSort: evs
 
 	grouped_byDate = @events['byDate'].groupBy (ev,i) ->
 		moment(ev.get('start').local).format("MMMM YYYY")
 	@upcoming.show new CategoryLayout categories: grouped_byDate if @upcoming
 
 	grouped_byCity = @events['byCity'].groupBy (ev,i) ->
-		att = ev.attributes
-		att = att[v] for v in options.evi_alphabetical_event_attribute.split('.')
-		att
+		ev.get options.evi_alphabetical_event_attribute
 	@alphabetical.show new CategoryLayout categories: grouped_byCity if @alphabetical
 
 	@map.show new MapLayout evnts: @events['noSort'] if @map

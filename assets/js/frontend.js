@@ -197,7 +197,7 @@ MapLayout = Marionette.LayoutView.extend({
 });
 
 EventListApp.addInitializer(function(options) {
-  var grouped_byCity, grouped_byDate, r, region, _i, _len, _ref;
+  var evs, grouped_byCity, grouped_byDate, r, region, _i, _len, _ref;
   this.ops = options;
   r = {};
   _ref = ['upcoming', 'alphabetical', 'nearby', 'map'];
@@ -211,25 +211,15 @@ EventListApp.addInitializer(function(options) {
   this.events_raw = _.filter(options.events, function(ev) {
     return ev.organizer.id === options.evi_organizer_id;
   });
+  evs = new Events(this.events_raw);
   this.events = {
-    byDate: new Events(_.sortBy(this.events_raw, function(ev) {
-      return ev.start.local;
+    byDate: new Events(evs.sortBy(function(ev) {
+      return ev.get('start').local;
     })),
-    byCity: new Events(_.sortBy(this.events_raw, function(ev) {
-      var att, v, _j, _len1, _ref1;
-      if (options.evi_alphabetical_event_attribute.indexOf('.') > -1) {
-        att = ev;
-        _ref1 = options.evi_alphabetical_event_attribute.split('.');
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          v = _ref1[_j];
-          att = att[v];
-        }
-        return att.substr(0, 1);
-      } else {
-        return ev[options.evi_alphabetical_event_attribute];
-      }
+    byCity: new Events(evs.sortBy(function(ev) {
+      return ev.get(options.evi_alphabetical_event_attribute);
     })),
-    noSort: new Events(this.events_raw)
+    noSort: evs
   };
   grouped_byDate = this.events['byDate'].groupBy(function(ev, i) {
     return moment(ev.get('start').local).format("MMMM YYYY");
@@ -240,14 +230,7 @@ EventListApp.addInitializer(function(options) {
     }));
   }
   grouped_byCity = this.events['byCity'].groupBy(function(ev, i) {
-    var att, v, _j, _len1, _ref1;
-    att = ev.attributes;
-    _ref1 = options.evi_alphabetical_event_attribute.split('.');
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      v = _ref1[_j];
-      att = att[v];
-    }
-    return att;
+    return ev.get(options.evi_alphabetical_event_attribute);
   });
   if (this.alphabetical) {
     this.alphabetical.show(new CategoryLayout({
