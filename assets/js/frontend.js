@@ -220,7 +220,6 @@ EventListApp.addInitializer(function(options) {
       var att, v, _j, _len1, _ref1;
       att = ev.attributes;
       if (options.evi_alphabetical_event_attribute.indexOf('.') > -1) {
-        console.log('oHai!');
         _ref1 = options.evi_alphabetical_event_attribute.split('.');
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           v = _ref1[_j];
@@ -244,12 +243,16 @@ EventListApp.addInitializer(function(options) {
   grouped_byCity = this.events['byCity'].groupBy(function(ev, i) {
     var att, v, _j, _len1, _ref1;
     att = ev.attributes;
-    _ref1 = options.evi_alphabetical_event_attribute.split('.');
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      v = _ref1[_j];
-      att = att[v];
+    if (options.evi_alphabetical_event_attribute.indexOf('.') > -1) {
+      _ref1 = options.evi_alphabetical_event_attribute.split('.');
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        v = _ref1[_j];
+        att = att[v];
+      }
+      return att;
+    } else {
+      return att[options.evi_alphabetical_event_attribute];
     }
-    return att;
   });
   if (this.alphabetical) {
     this.alphabetical.show(new CategoryLayout({
