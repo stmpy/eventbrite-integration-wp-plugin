@@ -204,7 +204,13 @@ EventListApp.addInitializer (options) ->
 	@events =
 		byDate: new Events evs.sortBy (ev) -> ev.get('start').local
 		byCity: new Events evs.sortBy (ev) ->
-			ev.get(options.evi_alphabetical_event_attribute)
+			att = ev.attributes
+			if options.evi_alphabetical_event_attribute.indexOf('.') > -1
+				att = att[v] for v in options.evi_alphabetical_event_attribute.split('.')
+				att
+			else
+				att[options.evi_alphabetical_event_attribute]
+
 		noSort: evs
 
 	grouped_byDate = @events['byDate'].groupBy (ev,i) ->
@@ -212,7 +218,13 @@ EventListApp.addInitializer (options) ->
 	@upcoming.show new CategoryLayout categories: grouped_byDate if @upcoming
 
 	grouped_byCity = @events['byCity'].groupBy (ev,i) ->
-		ev.get options.evi_alphabetical_event_attribute
+		att = ev.attributes
+		if options.evi_alphabetical_event_attribute.indexOf('.') > -1
+			att = att[v] for v in options.evi_alphabetical_event_attribute.split('.')
+			att
+		else
+			att[options.evi_alphabetical_event_attribute]
+
 	@alphabetical.show new CategoryLayout categories: grouped_byCity if @alphabetical
 
 	@map.show new MapLayout evnts: @events['noSort'] if @map
