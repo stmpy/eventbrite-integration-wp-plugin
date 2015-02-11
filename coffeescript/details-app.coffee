@@ -7,6 +7,7 @@ EventModel = Backbone.Model.extend
 		mEnd = moment(attributes.end.local)
 		start.formatted = mStart.format('dddd, MMMM Do, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz')
 		@set 'start', start
+		@set 'url', @get('url').replace('http:','https:')
 		if EventApp.ops.evi_event_metro_regex
 			expr = new RegExp(EventApp.ops.evi_event_metro_regex);
 			match = @get('post_title').match(expr)
@@ -47,9 +48,13 @@ Ticket = Backbone.Model.extend
 
 		sale_ends = moment(attributes.sales_end)
 		two_weeks = moment().add 2, 'weeks'
+		a_day = moment().add 24, 'hours'
 
 		if sale_ends.isBefore two_weeks
 			@set 'timeleft', 'only ' + sale_ends.diff(moment(), 'days') + ' days left at this price'
+		if sale_ends.isBefore a_day
+			difference = sale_ends.diff(moment(), 'hours')
+			@set 'timeleft', 'only ' + difference + ' hour' + ( if difference is 1 then '' else 's' ) + ' left at this price'
 		else
 			@set 'timeleft', 'until ' + sale_ends.format 'MMMM Do YYYY'
 
@@ -102,7 +107,7 @@ EventApp.displayTickets = (ev) ->
 	@event_tickets.$el.each (i, e) ->
 		EventApp.$(e).html (new TicketsView
 			collection: new Tickets ev.get('tickets').filter (ticket) ->
-				moment().isBetween(moment(ticket.sales_start).subtract(2, 'weeks'),moment(ticket.sales_end), 'day')
+				moment().isBetween(moment(ticket.sales_start).subtract(2, 'weeks'),moment(ticket.sales_end), 'minute')
 			template: (attributes) ->
 				Handlebars.compile(EventApp.$(e).html())(attributes) + '<br />'
 		).render().el
