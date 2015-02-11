@@ -289,11 +289,7 @@ EventModel = Backbone.Model.extend({
     if (EventApp.ops.evi_event_metro_regex) {
       expr = new RegExp(EventApp.ops.evi_event_metro_regex);
       match = this.get('post_title').match(expr);
-      if ((match != null) && (match[1] != null)) {
-        return this.set('metro', match[1]);
-      } else {
-        return this.set('metro', this.get('venue').address.city);
-      }
+      return this.set('metro', ((match != null) && (match[1] != null) ? match[1] : this.get('venue').address.city));
     }
   }
 });

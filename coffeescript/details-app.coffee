@@ -10,10 +10,8 @@ EventModel = Backbone.Model.extend
 		if EventApp.ops.evi_event_metro_regex
 			expr = new RegExp(EventApp.ops.evi_event_metro_regex);
 			match = @get('post_title').match(expr)
-			if match? and match[1]?
-				@set 'metro', match[1]
-			else
-				@set 'metro', @get('venue').address.city
+
+			@set 'metro', ( if match? and match[1]? then match[1] else @get('venue').address.city )
 
 EventView = Marionette.ItemView.extend
 	initialize: (options) ->
