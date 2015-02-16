@@ -1,19 +1,5 @@
 EventApp = new Marionette.Application
 
-EventModel = Backbone.Model.extend
-	initialize: (attributes) ->
-		start = attributes.start
-		mStart = moment(start.local)
-		mEnd = moment(attributes.end.local)
-		start.formatted = mStart.format('dddd, MMMM Do, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz')
-		@set 'start', start
-		@set 'url', @get('url').replace('http:','https:')
-		if EventApp.ops.evi_event_metro_regex
-			expr = new RegExp(EventApp.ops.evi_event_metro_regex);
-			match = @get('post_title').match(expr)
-
-			@set 'metro', ( if match? and match[1]? then match[1] else @get('venue').address.city )
-
 EventView = Marionette.ItemView.extend
 	initialize: (options) ->
 		@template = options.template if options.template
@@ -39,27 +25,6 @@ EventLinks = Marionette.CollectionView.extend
 		template: @template
 
 ### TICKETING ###
-Ticket = Backbone.Model.extend
-	initialize: (attributes) ->
-		if attributes.free
-			@set 'price', 'Free'
-		else
-			@set 'price', attributes.cost.display
-
-		sale_ends = moment(attributes.sales_end)
-		two_weeks = moment().add 2, 'weeks'
-		a_day = moment().add 24, 'hours'
-
-		if sale_ends.isBefore two_weeks
-			@set 'timeleft', 'only ' + sale_ends.diff(moment(), 'days') + ' days left at this price'
-		if sale_ends.isBefore a_day
-			difference = sale_ends.diff(moment(), 'hours')
-			@set 'timeleft', 'only ' + difference + ' hour' + ( if difference is 1 then '' else 's' ) + ' left at this price'
-		else
-			@set 'timeleft', 'until ' + sale_ends.format 'MMMM Do YYYY'
-
-Tickets = Backbone.Collection.extend model: Ticket
-
 TicketsView = Marionette.CollectionView.extend
 	childView: EventView
 	initialize: (options) ->
@@ -69,12 +34,20 @@ TicketsView = Marionette.CollectionView.extend
 		template: @template
 
 EventApp.showRegForm = ->
-	EventApp.$('.eventbrite-event-private').each (i, e) ->
+	EventApp.$(EventApp.ops.evi_event_private_class).each (i, e) ->
 		EventApp.$(e).show()
 
 EventApp.showPublicDetails = ->
-	EventApp.$('.eventbrite-event-public').each (i,e) ->
+	EventApp.$(EventApp.ops.evi_event_public_class).each (i,e) ->
 		EventApp.$(e).show()
+
+EventApp.showSoldOutForm = ->
+	EventApp.$(EventApp.ops.evi_event_sold_out_class).each (i,e) ->
+		EventApp.$(e).show()
+
+EventApp.renderTemplates = (ev) ->
+	EventApp.$(EventApp.ops.evi_event_template_class).each (i,e) ->
+		EventApp.$(e).html Handlebars.compile(EventApp.$(e).html())(ev.toJSON())
 
 EventApp.displayLinks = (ev) ->
 	@event_links.$el.each (i, e) ->
@@ -106,8 +79,7 @@ EventDetails = Marionette.ItemView.extend {}
 EventApp.displayTickets = (ev) ->
 	@event_tickets.$el.each (i, e) ->
 		EventApp.$(e).html (new TicketsView
-			collection: new Tickets ev.get('tickets').filter (ticket) ->
-				moment().isBetween(moment(ticket.sales_start).subtract(2, 'weeks'),moment(ticket.sales_end), 'minute')
+			collection: ev.get('tickets')
 			template: (attributes) ->
 				Handlebars.compile(EventApp.$(e).html())(attributes) + '<br />'
 		).render().el
@@ -160,7 +132,7 @@ EventApp.addInitializer (options) ->
 		r[region] = options['evi_' + region + '_tag_id'] if EventApp.$(options['evi_' + region + '_tag_id']).length > 0
 	@addRegions r
 
-	ev = new EventModel options.event
+	ev = new Event options.event, @ops
 
 	if _.isEmpty(options.event.ID)
 		EventApp.$('.subheader').html("").prev().html("")
@@ -177,8 +149,11 @@ EventApp.addInitializer (options) ->
 	@displayWhenWhere(ev) if @event_when_where
 	@displaySettings(ev) if @event_settings
 	@drawMap(ev) if @map
+	@renderTemplates(ev)
 
-	if ev.get('public')
+	if ev.get('soldout')
+		@showSoldOutForm()
+	else if ev.get('public')
 		@showPublicDetails()
 		@displayLinks(ev) if @event_links
 		@displayTickets(ev) if @event_tickets

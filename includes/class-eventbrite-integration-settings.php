@@ -303,35 +303,35 @@ class Eventbrite_Integration_Settings {
 					'placeholder'	=> ''
 				),
 				array(
-					'id' 			=> 'event_when_where_tag_id',
-					'label'			=> __( 'Event When & Where Tag ID' , 'eventbrite-integration' ),
-					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event when & where details', 'eventbrite-integration' ),
+					'id' 			=> 'event_private_class',
+					'label'			=> __( 'Event Private Class' , 'eventbrite-integration' ),
+					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event details', 'eventbrite-integration' ),
 					'type'			=> 'text',
-					'default'		=> '#eventbrite-event-when-where',
+					'default'		=> '.eventbrite-event-private',
 					'placeholder'	=> ''
 				),
 				array(
-					'id' 			=> 'event_settings_tag_id',
-					'label'			=> __( 'Event settings Tag ID' , 'eventbrite-integration' ),
+					'id' 			=> 'event_public_class',
+					'label'			=> __( 'Event Public Class' , 'eventbrite-integration' ),
 					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event details', 'eventbrite-integration' ),
 					'type'			=> 'text',
-					'default'		=> '.eventbrite-event-settings',
+					'default'		=> '.eventbrite-event-public',
 					'placeholder'	=> ''
 				),
 				array(
-					'id' 			=> 'event_prereg_tag_id',
-					'label'			=> __( 'Event Pre-Registration Form Tag ID' , 'eventbrite-integration' ),
+					'id' 			=> 'event_sold_out_class',
+					'label'			=> __( 'Event Sold Out Class' , 'eventbrite-integration' ),
 					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event details', 'eventbrite-integration' ),
 					'type'			=> 'text',
-					'default'		=> '.eventbrite-event-preregistration',
+					'default'		=> '.eventbrite-event-sold-out',
 					'placeholder'	=> ''
 				),
 				array(
-					'id' 			=> 'event_live_tag_id',
-					'label'			=> __( 'Live Event Details Tag ID' , 'eventbrite-integration' ),
-					'description'	=> __( 'This ID needs to be placed somewhere on the page for the <a href="http://backbonejs.org">Backbone</a> application to insert eventbrite event details', 'eventbrite-integration' ),
+					'id' 			=> 'event_template_class',
+					'label'			=> __( 'Event Template' , 'eventbrite-integration' ),
+					'description'	=> __( 'This ID will be used by the  <a href="http://backbonejs.org">Backbone</a> application to extract the template contained therin and replace it with eventbrite event details', 'eventbrite-integration' ),
 					'type'			=> 'text',
-					'default'		=> '.eventbrite-event-live',
+					'default'		=> '.eventbrite-event-template',
 					'placeholder'	=> ''
 				),
 			)

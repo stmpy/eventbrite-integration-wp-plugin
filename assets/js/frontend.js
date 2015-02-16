@@ -1,35 +1,77 @@
-var CategoryLayout, ColumnLayout, EventListApp, EventListModel, EventView, Events, MapLayout, Tab, Tabs, ThirdColumnView;
+var Event, Events, Ticket, Tickets;
 
-EventListApp = new Marionette.Application({
-  regions: {
-    application: '.main-content'
+Event = Backbone.Model.extend({
+  initialize: function(attributes, options) {
+    var allTickets, expr, mEnd, mStart, match, metro, start, tickets;
+    if (options.evi_event_detail_page != null) {
+      this.set('local_url', '/' + options.evi_event_detail_page + '/?' + options.evi_event_id_variable + '=' + this.get('ID'));
+    }
+    allTickets = this.get('tickets');
+    tickets = new Tickets(_.filter(allTickets, function(ticket) {
+      return moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute');
+    }));
+    this.set('tickets', tickets);
+    this.set('soldout', tickets.some(function(ticket) {
+      return ticket.get('quantity_sold') >= ticket.get('quantity_total');
+    }));
+    this.set('raceDayTicket', new Ticket(_.max(allTickets, function(ticket) {
+      return ticket.cost.value;
+    })));
+    start = attributes.start;
+    mStart = moment(start.local);
+    mEnd = moment(attributes.end.local);
+    start.formatted = mStart.format('dddd, MMMM Do, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz');
+    this.set('start', start);
+    this.set('url', this.get('url').replace('http:', 'https:'));
+    expr = new RegExp(options.evi_event_metro_regex);
+    match = this.get('post_title').match(expr);
+    metro = ((match != null) && (match[1] != null) ? match[1] : this.get('venue').address.city);
+    return this.set('metro', metro);
+  },
+  toJSON: function() {
+    var attr;
+    attr = _.clone(this.attributes);
+    attr.raceDayTicket = this.get('raceDayTicket').toJSON();
+    return attr;
   }
 });
 
-EventListModel = Backbone.Model.extend({
-  initialize: function() {
-    var expr, match;
-    this.set('local_url', '/' + EventListApp.ops.evi_event_detail_page + '/?' + EventListApp.ops.evi_event_id_variable + '=' + this.get('ID'));
-    if (EventListApp.ops.evi_event_metro_regex) {
-      expr = new RegExp(EventListApp.ops.evi_event_metro_regex);
-      match = this.get('post_title').match(expr);
-      if ((match != null) && (match[1] != null)) {
-        return this.set('metro', match[1]);
-      } else {
-        return this.set('metro', this.get('venue').address.city);
-      }
+Ticket = Backbone.Model.extend({
+  initialize: function(attributes) {
+    var a_day, difference, sale_ends, two_weeks;
+    if (attributes.free) {
+      this.set('price', 'Free');
+    } else {
+      this.set('price', attributes.cost.display);
+    }
+    sale_ends = moment(attributes.sales_end);
+    two_weeks = moment().add(2, 'weeks');
+    a_day = moment().add(24, 'hours');
+    if (sale_ends.isBefore(two_weeks)) {
+      return this.set('timeleft', 'only ' + sale_ends.diff(moment(), 'days') + ' days left at this price');
+    } else if (sale_ends.isBefore(a_day)) {
+      difference = sale_ends.diff(moment(), 'hours');
+      return this.set('timeleft', 'only ' + difference + ' hour' + (difference === 1 ? '' : 's') + ' left at this price');
+    } else {
+      return this.set('timeleft', 'until ' + sale_ends.format('MMMM Do YYYY'));
     }
   }
 });
 
 Events = Backbone.Collection.extend({
-  model: EventListModel
+  model: Event
 });
 
-Tab = Backbone.Model.extend({});
+Tickets = Backbone.Collection.extend({
+  model: Ticket
+});
 
-Tabs = Backbone.Collection.extend({
-  model: Tab
+var CategoryLayout, ColumnLayout, EventListApp, EventView, MapLayout, ThirdColumnView;
+
+EventListApp = new Marionette.Application({
+  regions: {
+    application: '.main-content'
+  }
 });
 
 EventView = Marionette.ItemView.extend({
@@ -61,7 +103,7 @@ ColumnLayout = Marionette.LayoutView.extend({
     columnView = this._mapping[this.getOption('column_count')];
     return _.each(this.getOption('columns'), function(group, i) {
       return self.$el.append((new columnView({
-        collection: new Events(group)
+        collection: new Events(group, EventListApp.ops)
       })).render().el);
     });
   }
@@ -182,11 +224,11 @@ MapLayout = Marionette.LayoutView.extend({
     this.map.setCenter(myLocation);
     this.map.setZoom(6);
     if (EventListApp.nearby) {
-      evs = new Events(_.sortBy(EventListApp.events_raw, function(ev) {
+      evs = new Events(EventListApp.events.noSort.sortBy(function(ev) {
 
         /* ev.proximity = */
-        return google.maps.geometry.spherical.computeDistanceBetween(myLocation, new google.maps.LatLng(ev.venue.latitude, ev.venue.longitude)) * 0.00062137;
-      }));
+        return google.maps.geometry.spherical.computeDistanceBetween(myLocation, new google.maps.LatLng(ev.get('venue').latitude, ev.get('venue').longitude)) * 0.00062137;
+      }, EventListApp.ops));
       return EventListApp.nearby.show(new CategoryLayout({
         categories: {
           'Closest to Furthest': evs.models.slice(0, 3)
@@ -211,11 +253,11 @@ EventListApp.addInitializer(function(options) {
   this.events_raw = _.filter(options.events, function(ev) {
     return ev.organizer.id === options.evi_organizer_id;
   });
-  evs = new Events(this.events_raw);
+  evs = new Events(this.events_raw, EventListApp.ops);
   this.events = {
     byDate: new Events(evs.sortBy(function(ev) {
       return ev.get('start').local;
-    })),
+    }, EventListApp.ops)),
     byCity: new Events(evs.sortBy(function(ev) {
       var att, v, _j, _len1, _ref1;
       att = ev.attributes;
@@ -229,7 +271,7 @@ EventListApp.addInitializer(function(options) {
       } else {
         return att[options.evi_alphabetical_event_attribute];
       }
-    })),
+    }, EventListApp.ops)),
     noSort: evs
   };
   grouped_byDate = this.events['byDate'].groupBy(function(ev, i) {
@@ -274,26 +316,9 @@ jQuery(document).on('load-events', function(e, options) {
   return EventListApp.start(options);
 });
 
-var EventApp, EventDetails, EventLinks, EventModel, EventView, Link, LinkList, Ticket, Tickets, TicketsView;
+var EventApp, EventDetails, EventLinks, EventView, Link, LinkList, TicketsView;
 
 EventApp = new Marionette.Application;
-
-EventModel = Backbone.Model.extend({
-  initialize: function(attributes) {
-    var expr, mEnd, mStart, match, start;
-    start = attributes.start;
-    mStart = moment(start.local);
-    mEnd = moment(attributes.end.local);
-    start.formatted = mStart.format('dddd, MMMM Do, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz');
-    this.set('start', start);
-    this.set('url', this.get('url').replace('http:', 'https:'));
-    if (EventApp.ops.evi_event_metro_regex) {
-      expr = new RegExp(EventApp.ops.evi_event_metro_regex);
-      match = this.get('post_title').match(expr);
-      return this.set('metro', ((match != null) && (match[1] != null) ? match[1] : this.get('venue').address.city));
-    }
-  }
-});
 
 EventView = Marionette.ItemView.extend({
   initialize: function(options) {
@@ -340,34 +365,6 @@ EventLinks = Marionette.CollectionView.extend({
 
 /* TICKETING */
 
-Ticket = Backbone.Model.extend({
-  initialize: function(attributes) {
-    var a_day, difference, sale_ends, two_weeks;
-    if (attributes.free) {
-      this.set('price', 'Free');
-    } else {
-      this.set('price', attributes.cost.display);
-    }
-    sale_ends = moment(attributes.sales_end);
-    two_weeks = moment().add(2, 'weeks');
-    a_day = moment().add(24, 'hours');
-    console.log(moment());
-    if (sale_ends.isBefore(two_weeks)) {
-      this.set('timeleft', 'only ' + sale_ends.diff(moment(), 'days') + ' days left at this price');
-    }
-    if (sale_ends.isBefore(a_day)) {
-      difference = sale_ends.diff(moment(), 'hours');
-      return this.set('timeleft', 'only ' + difference + ' hour' + (difference === 1 ? '' : 's') + ' left at this price');
-    } else {
-      return this.set('timeleft', 'until ' + sale_ends.format('MMMM Do YYYY'));
-    }
-  }
-});
-
-Tickets = Backbone.Collection.extend({
-  model: Ticket
-});
-
 TicketsView = Marionette.CollectionView.extend({
   childView: EventView,
   initialize: function(options) {
@@ -383,14 +380,26 @@ TicketsView = Marionette.CollectionView.extend({
 });
 
 EventApp.showRegForm = function() {
-  return EventApp.$('.eventbrite-event-private').each(function(i, e) {
+  return EventApp.$(EventApp.ops.evi_event_private_class).each(function(i, e) {
     return EventApp.$(e).show();
   });
 };
 
 EventApp.showPublicDetails = function() {
-  return EventApp.$('.eventbrite-event-public').each(function(i, e) {
+  return EventApp.$(EventApp.ops.evi_event_public_class).each(function(i, e) {
     return EventApp.$(e).show();
+  });
+};
+
+EventApp.showSoldOutForm = function() {
+  return EventApp.$(EventApp.ops.evi_event_sold_out_class).each(function(i, e) {
+    return EventApp.$(e).show();
+  });
+};
+
+EventApp.renderTemplates = function(ev) {
+  return EventApp.$(EventApp.ops.evi_event_template_class).each(function(i, e) {
+    return EventApp.$(e).html(Handlebars.compile(EventApp.$(e).html())(ev.toJSON()));
   });
 };
 
@@ -431,9 +440,7 @@ EventDetails = Marionette.ItemView.extend({});
 EventApp.displayTickets = function(ev) {
   return this.event_tickets.$el.each(function(i, e) {
     return EventApp.$(e).html((new TicketsView({
-      collection: new Tickets(ev.get('tickets').filter(function(ticket) {
-        return moment().isBetween(moment(ticket.sales_start).subtract(2, 'weeks'), moment(ticket.sales_end), 'minute');
-      })),
+      collection: ev.get('tickets'),
       template: function(attributes) {
         return Handlebars.compile(EventApp.$(e).html())(attributes) + '<br />';
       }
@@ -507,7 +514,7 @@ EventApp.addInitializer(function(options) {
     }
   }
   this.addRegions(r);
-  ev = new EventModel(options.event);
+  ev = new Event(options.event, this.ops);
   if (_.isEmpty(options.event.ID)) {
     EventApp.$('.subheader').html("").prev().html("");
     if (confirm("Unable to Find event, click 'OK' to view all locations,\n click 'CANCEL' to refresh the page.")) {
@@ -527,7 +534,10 @@ EventApp.addInitializer(function(options) {
   if (this.map) {
     this.drawMap(ev);
   }
-  if (ev.get('public')) {
+  this.renderTemplates(ev);
+  if (ev.get('soldout')) {
+    return this.showSoldOutForm();
+  } else if (ev.get('public')) {
     this.showPublicDetails();
     if (this.event_links) {
       this.displayLinks(ev);

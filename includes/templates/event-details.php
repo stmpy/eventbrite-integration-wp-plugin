@@ -16,14 +16,16 @@
 				'event' => $event->have_posts() ? $event->post : null,
 				'evi_event_links_tag_id' => get_option('evi_event_links_tag_id', null),
 				'evi_event_tickets_tag_id' => get_option('evi_event_tickets_tag_id', null),
-				'evi_event_settings_tag_id' => get_option('evi_event_settings_tag_id', null),
 				'evi_map_tag_id' => get_option('evi_map_tag_id', null),
-				'evi_event_when_where_tag_id' => get_option('evi_event_when_where_tag_id', null),
 				'evi_enable_scroll_wheel' => get_option('evi_enable_scroll_wheel',null),
 				'evi_map_style' => get_option('evi_map_style',null),
 				'evi_map_style_name' => get_option('evi_map_style_name',null),
 				'evi_marker_icon' => get_option('evi_marker_icon',null) ? wp_get_attachment_thumb_url( get_option('evi_marker_icon') ) : null,
 				'evi_event_metro_regex' => get_option('evi_event_metro_regex', null),
+				'evi_event_private_class' => get_option('evi_event_private_class', null),
+				'evi_event_public_class' => get_option('evi_event_public_class', null),
+				'evi_event_sold_out_class' => get_option('evi_event_sold_out_class', null),
+				'evi_event_template_class' => get_option('evi_event_template_class', null)
 			]); ?>);
 		});
 	</script>

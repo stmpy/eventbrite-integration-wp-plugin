@@ -1,35 +1,9 @@
-var CategoryLayout, ColumnLayout, EventListApp, EventListModel, EventView, Events, MapLayout, Tab, Tabs, ThirdColumnView;
+var CategoryLayout, ColumnLayout, EventListApp, EventView, MapLayout, ThirdColumnView;
 
 EventListApp = new Marionette.Application({
   regions: {
     application: '.main-content'
   }
-});
-
-EventListModel = Backbone.Model.extend({
-  initialize: function() {
-    var expr, match;
-    this.set('local_url', '/' + EventListApp.ops.evi_event_detail_page + '/?' + EventListApp.ops.evi_event_id_variable + '=' + this.get('ID'));
-    if (EventListApp.ops.evi_event_metro_regex) {
-      expr = new RegExp(EventListApp.ops.evi_event_metro_regex);
-      match = this.get('post_title').match(expr);
-      if ((match != null) && (match[1] != null)) {
-        return this.set('metro', match[1]);
-      } else {
-        return this.set('metro', this.get('venue').address.city);
-      }
-    }
-  }
-});
-
-Events = Backbone.Collection.extend({
-  model: EventListModel
-});
-
-Tab = Backbone.Model.extend({});
-
-Tabs = Backbone.Collection.extend({
-  model: Tab
 });
 
 EventView = Marionette.ItemView.extend({
@@ -61,7 +35,7 @@ ColumnLayout = Marionette.LayoutView.extend({
     columnView = this._mapping[this.getOption('column_count')];
     return _.each(this.getOption('columns'), function(group, i) {
       return self.$el.append((new columnView({
-        collection: new Events(group)
+        collection: new Events(group, EventListApp.ops)
       })).render().el);
     });
   }
@@ -182,11 +156,11 @@ MapLayout = Marionette.LayoutView.extend({
     this.map.setCenter(myLocation);
     this.map.setZoom(6);
     if (EventListApp.nearby) {
-      evs = new Events(_.sortBy(EventListApp.events_raw, function(ev) {
+      evs = new Events(EventListApp.events.noSort.sortBy(function(ev) {
 
         /* ev.proximity = */
-        return google.maps.geometry.spherical.computeDistanceBetween(myLocation, new google.maps.LatLng(ev.venue.latitude, ev.venue.longitude)) * 0.00062137;
-      }));
+        return google.maps.geometry.spherical.computeDistanceBetween(myLocation, new google.maps.LatLng(ev.get('venue').latitude, ev.get('venue').longitude)) * 0.00062137;
+      }, EventListApp.ops));
       return EventListApp.nearby.show(new CategoryLayout({
         categories: {
           'Closest to Furthest': evs.models.slice(0, 3)
@@ -211,11 +185,11 @@ EventListApp.addInitializer(function(options) {
   this.events_raw = _.filter(options.events, function(ev) {
     return ev.organizer.id === options.evi_organizer_id;
   });
-  evs = new Events(this.events_raw);
+  evs = new Events(this.events_raw, EventListApp.ops);
   this.events = {
     byDate: new Events(evs.sortBy(function(ev) {
       return ev.get('start').local;
-    })),
+    }, EventListApp.ops)),
     byCity: new Events(evs.sortBy(function(ev) {
       var att, v, _j, _len1, _ref1;
       att = ev.attributes;
@@ -229,7 +203,7 @@ EventListApp.addInitializer(function(options) {
       } else {
         return att[options.evi_alphabetical_event_attribute];
       }
-    })),
+    }, EventListApp.ops)),
     noSort: evs
   };
   grouped_byDate = this.events['byDate'].groupBy(function(ev, i) {

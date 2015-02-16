@@ -3,32 +3,6 @@ EventListApp = new Marionette.Application
 		application: '.main-content'
 
 
-# ##     ##  #######  ########  ######## ##        ######
-# ###   ### ##     ## ##     ## ##       ##       ##    ##
-# #### #### ##     ## ##     ## ##       ##       ##
-# ## ### ## ##     ## ##     ## ######   ##        ######
-# ##     ## ##     ## ##     ## ##       ##             ##
-# ##     ## ##     ## ##     ## ##       ##       ##    ##
-# ##     ##  #######  ########  ######## ########  ######
-
-
-EventListModel = Backbone.Model.extend
-	initialize: ->
-		@set 'local_url', '/' + EventListApp.ops.evi_event_detail_page + '/?' + EventListApp.ops.evi_event_id_variable + '=' + @get 'ID'
-		if EventListApp.ops.evi_event_metro_regex
-			expr = new RegExp(EventListApp.ops.evi_event_metro_regex);
-			match = @get('post_title').match(expr)
-			if match? and match[1]?
-				@set 'metro', match[1]
-			else
-				@set 'metro', @get('venue').address.city
-
-Events = Backbone.Collection.extend model: EventListModel
-
-Tab = Backbone.Model.extend {}
-Tabs = Backbone.Collection.extend model: Tab
-
-
 # ##     ## #### ######## ##      ##  ######
 # ##     ##  ##  ##       ##  ##  ## ##    ##
 # ##     ##  ##  ##       ##  ##  ## ##
@@ -40,7 +14,7 @@ Tabs = Backbone.Collection.extend model: Tab
 
 EventView = Marionette.ItemView.extend
 	className: 'eventbrite-event'
-	template: (attributes) ->
+	template: (attributes) -> # needs to be a closure, the ops don't exist until the app is run
 		_.template(EventListApp.ops.evi_event_template)(attributes)
 
 ThirdColumnView = Marionette.CollectionView.extend
@@ -72,14 +46,13 @@ ColumnLayout = Marionette.LayoutView.extend
 		columnView = @_mapping[@getOption('column_count')]
 		_.each @getOption('columns'), (group,i) ->
 			self.$el.append (new columnView
-				collection: new Events group).render().el
+				collection: new Events(group, EventListApp.ops)).render().el
 
 CategoryLayout = Marionette.LayoutView.extend
 	template: _.template ''
 	onRender: ->
 		self = this
 		_.each @getOption('categories'), (group,category) ->
-
 			self.$el.append "<div class='vc_row-fluid'><div class='vc_span12 col'><h4 class='eventbrite-category-title'>" + category + "</h4></div></div>", (new ColumnLayout column_count: 3, columns: _.groupBy group, (event,i) ->
 					(parseInt (i % 3) + 1)
 				).render().el
@@ -169,10 +142,11 @@ MapLayout = Marionette.LayoutView.extend
 		@map.setZoom 6
 
 		if EventListApp.nearby
-			evs = new Events _.sortBy EventListApp.events_raw, (ev) ->
+			evs = new Events EventListApp.events.noSort.sortBy (ev) ->
 				### ev.proximity = ###
 				# ev.proximity
-				google.maps.geometry.spherical.computeDistanceBetween(myLocation, new google.maps.LatLng(ev.venue.latitude, ev.venue.longitude)) * 0.00062137
+				google.maps.geometry.spherical.computeDistanceBetween(myLocation, new google.maps.LatLng(ev.get('venue').latitude, ev.get('venue').longitude)) * 0.00062137
+			, EventListApp.ops
 
 			EventListApp.nearby.show new CategoryLayout categories: { 'Closest to Furthest': evs.models.slice(0,3) }
 
@@ -199,10 +173,12 @@ EventListApp.addInitializer (options) ->
 	@events_raw = _.filter options.events, (ev) ->
 		return ev.organizer.id == options.evi_organizer_id
 
-	evs = new Events @events_raw
+	evs = new Events @events_raw, EventListApp.ops
 
 	@events =
-		byDate: new Events evs.sortBy (ev) -> ev.get('start').local
+		byDate: new Events evs.sortBy (ev) ->
+			ev.get('start').local
+		, EventListApp.ops
 		byCity: new Events evs.sortBy (ev) ->
 			att = ev.attributes
 			if options.evi_alphabetical_event_attribute.indexOf('.') > -1
@@ -210,6 +186,7 @@ EventListApp.addInitializer (options) ->
 				att
 			else
 				att[options.evi_alphabetical_event_attribute]
+		, EventListApp.ops
 
 		noSort: evs
 

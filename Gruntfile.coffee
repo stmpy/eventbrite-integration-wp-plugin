@@ -13,7 +13,7 @@ module.exports = (grunt) ->
 
     concat:
       app:
-        src: ['./assets/js/list-app.js','./assets/js/details-app.js']
+        src: ['./assets/js/resources.js','./assets/js/list-app.js','./assets/js/details-app.js']
         dest: './assets/js/frontend.js'
 
     uglify:
