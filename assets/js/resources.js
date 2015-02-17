@@ -2,21 +2,23 @@ var Event, Events, Ticket, Tickets;
 
 Event = Backbone.Model.extend({
   initialize: function(attributes, options) {
-    var allTickets, expr, mEnd, mStart, match, metro, start, tickets;
+    var allTickets, expr, mEnd, mStart, match, metro, raceDayTicket, start, tickets;
     if (options.evi_event_detail_page != null) {
       this.set('local_url', '/' + options.evi_event_detail_page + '/?' + options.evi_event_id_variable + '=' + this.get('ID'));
     }
     allTickets = this.get('tickets');
-    tickets = new Tickets(_.filter(allTickets, function(ticket) {
-      return moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute');
+    raceDayTicket = new Ticket(_.max(allTickets, function(ticket) {
+      return new Date(ticket.sales_end);
     }));
+    tickets = new Tickets(_.filter(allTickets, function(ticket) {
+      return moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') || moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day');
+    }), {
+      raceDayTicket: raceDayTicket
+    });
     this.set('tickets', tickets);
     this.set('soldout', tickets.some(function(ticket) {
       return ticket.get('quantity_sold') >= ticket.get('quantity_total');
     }));
-    this.set('raceDayTicket', new Ticket(_.max(allTickets, function(ticket) {
-      return ticket.cost.value;
-    })));
     start = attributes.start;
     mStart = moment(start.local);
     mEnd = moment(attributes.end.local);
@@ -27,18 +29,15 @@ Event = Backbone.Model.extend({
     match = this.get('post_title').match(expr);
     metro = ((match != null) && (match[1] != null) ? match[1] : this.get('venue').address.city);
     return this.set('metro', metro);
-  },
-  toJSON: function() {
-    var attr;
-    attr = _.clone(this.attributes);
-    attr.raceDayTicket = this.get('raceDayTicket').toJSON();
-    return attr;
   }
 });
 
 Ticket = Backbone.Model.extend({
-  initialize: function(attributes) {
+  initialize: function(attributes, options) {
     var a_day, difference, sale_ends, two_weeks;
+    if (options == null) {
+      options = {};
+    }
     if (attributes.free) {
       this.set('price', 'Free');
     } else {
@@ -48,12 +47,15 @@ Ticket = Backbone.Model.extend({
     two_weeks = moment().add(2, 'weeks');
     a_day = moment().add(24, 'hours');
     if (sale_ends.isBefore(two_weeks)) {
-      return this.set('timeleft', 'only ' + sale_ends.diff(moment(), 'days') + ' days left at this price');
+      this.set('timeleft', 'only ' + sale_ends.diff(moment(), 'days') + ' days left at this price');
     } else if (sale_ends.isBefore(a_day)) {
       difference = sale_ends.diff(moment(), 'hours');
-      return this.set('timeleft', 'only ' + difference + ' hour' + (difference === 1 ? '' : 's') + ' left at this price');
+      this.set('timeleft', 'only ' + difference + ' hour' + (difference === 1 ? '' : 's') + ' left at this price');
     } else {
-      return this.set('timeleft', 'until ' + sale_ends.format('MMMM Do YYYY'));
+      this.set('timeleft', 'until ' + sale_ends.format('MMMM Do YYYY'));
+    }
+    if (options.raceDayTicket != null) {
+      return this.set('raceDayTicket', moment(options.raceDayTicket.get('sales_end')).isSame(moment(attributes.sales_end), 'day'));
     }
   }
 });

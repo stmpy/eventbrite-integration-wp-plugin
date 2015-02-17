@@ -13,18 +13,18 @@ Event = Backbone.Model.extend
 		@set('local_url', '/' + options.evi_event_detail_page + '/?' + options.evi_event_id_variable + '=' + @get 'ID') if options.evi_event_detail_page?
 
 		allTickets = @get('tickets')
+		# Set Race Day Ticket
+		raceDayTicket = new Ticket _.max allTickets, (ticket) -> new Date(ticket.sales_end)
+
 		# Set Active Tickets
-		tickets = new Tickets _.filter allTickets, (ticket) ->
-			moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute')
+		tickets = new Tickets _.filter( allTickets, (ticket) ->
+			moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') or moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day')
+		), { raceDayTicket: raceDayTicket }
 
 		@set 'tickets', tickets
 
 		# Set Sold Out
 		@set 'soldout', tickets.some (ticket) -> ticket.get('quantity_sold') >= ticket.get('quantity_total')
-
-		# Set Race Day Ticket
-		@set 'raceDayTicket', new Ticket _.max allTickets, (ticket) ->
-			ticket.cost.value
 
 		# Set a formatted date
 		start = attributes.start
@@ -42,13 +42,8 @@ Event = Backbone.Model.extend
 		metro = ( if match? and match[1]? then match[1] else @get('venue').address.city )
 		@set 'metro', metro
 
-	toJSON:  ->
-		attr = _.clone @attributes
-		attr.raceDayTicket = @get('raceDayTicket').toJSON()
-		attr
-
 Ticket = Backbone.Model.extend
-	initialize: (attributes) ->
+	initialize: (attributes, options = {}) ->
 		if attributes.free
 			@set 'price', 'Free'
 		else
@@ -65,6 +60,8 @@ Ticket = Backbone.Model.extend
 			@set 'timeleft', 'only ' + difference + ' hour' + ( if difference is 1 then '' else 's' ) + ' left at this price'
 		else
 			@set 'timeleft', 'until ' + sale_ends.format 'MMMM Do YYYY'
+
+		@set 'raceDayTicket', moment(options.raceDayTicket.get('sales_end')).isSame(moment(attributes.sales_end), 'day') if options.raceDayTicket?
 
 #  ######   #######  ##       ##       ########  ######  ######## ####  #######  ##    ##  ######
 # ##    ## ##     ## ##       ##       ##       ##    ##    ##     ##  ##     ## ###   ## ##    ##
