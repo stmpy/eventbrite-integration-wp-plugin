@@ -63,6 +63,10 @@ Ticket = Backbone.Model.extend
 
 		@set 'raceDayTicket', moment(options.raceDayTicket.get('sales_end')).isSame(moment(attributes.sales_end), 'day') if options.raceDayTicket?
 
+		# Sort - the end date is most important, the length is least important, only needs to be relative
+		@set 'sort', parseInt(moment(attributes.sales_end).diff(moment(attributes.sales_start))) / 10000 + (parseInt(moment(attributes.sales_end).format("X")) * 10)
+
+
 #  ######   #######  ##       ##       ########  ######  ######## ####  #######  ##    ##  ######
 # ##    ## ##     ## ##       ##       ##       ##    ##    ##     ##  ##     ## ###   ## ##    ##
 # ##       ##     ## ##       ##       ##       ##          ##     ##  ##     ## ####  ## ##
@@ -72,4 +76,4 @@ Ticket = Backbone.Model.extend
 #  ######   #######  ######## ######## ########  ######     ##    ####  #######  ##    ##  ######
 
 Events = Backbone.Collection.extend { model: Event }
-Tickets = Backbone.Collection.extend { model: Ticket }
+Tickets = Backbone.Collection.extend { model: Ticket, comparator: 'sort' }

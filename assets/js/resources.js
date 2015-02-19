@@ -55,8 +55,9 @@ Ticket = Backbone.Model.extend({
       this.set('timeleft', 'until ' + sale_ends.format('MMMM Do YYYY'));
     }
     if (options.raceDayTicket != null) {
-      return this.set('raceDayTicket', moment(options.raceDayTicket.get('sales_end')).isSame(moment(attributes.sales_end), 'day'));
+      this.set('raceDayTicket', moment(options.raceDayTicket.get('sales_end')).isSame(moment(attributes.sales_end), 'day'));
     }
+    return this.set('sort', parseInt(moment(attributes.sales_end).diff(moment(attributes.sales_start))) / 10000 + (parseInt(moment(attributes.sales_end).format("X")) * 10));
   }
 });
 
@@ -65,5 +66,6 @@ Events = Backbone.Collection.extend({
 });
 
 Tickets = Backbone.Collection.extend({
-  model: Ticket
+  model: Ticket,
+  comparator: 'sort'
 });
