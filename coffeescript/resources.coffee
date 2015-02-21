@@ -53,11 +53,11 @@ Ticket = Backbone.Model.extend
 		two_weeks = moment().add 2, 'weeks'
 		a_day = moment().add 24, 'hours'
 
-		if sale_ends.isBefore two_weeks
-			@set 'timeleft', 'only ' + sale_ends.diff(moment(), 'days') + ' days left at this price'
-		else if sale_ends.isBefore a_day
+		if sale_ends.isBefore a_day
 			difference = sale_ends.diff(moment(), 'hours')
 			@set 'timeleft', 'only ' + difference + ' hour' + ( if difference is 1 then '' else 's' ) + ' left at this price'
+		else if sale_ends.isBefore two_weeks
+			@set 'timeleft', 'only ' + sale_ends.diff(moment(), 'days') + ' days left at this price'
 		else
 			@set 'timeleft', 'until ' + sale_ends.format 'MMMM Do YYYY'
 
