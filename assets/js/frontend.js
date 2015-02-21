@@ -34,7 +34,7 @@ Event = Backbone.Model.extend({
 
 Ticket = Backbone.Model.extend({
   initialize: function(attributes, options) {
-    var a_day, difference, sale_ends, two_weeks;
+    var a_day, an_hour, difference, sale_ends, two_weeks;
     if (options == null) {
       options = {};
     }
@@ -46,7 +46,11 @@ Ticket = Backbone.Model.extend({
     sale_ends = moment(attributes.sales_end);
     two_weeks = moment().add(2, 'weeks');
     a_day = moment().add(24, 'hours');
-    if (sale_ends.isBefore(a_day)) {
+    an_hour = moment().add(60, 'minutes');
+    if (sale_ends.isBefore(an_hour)) {
+      difference = sale_ends.diff(moment(), 'minutes');
+      this.set('timeleft', 'only ' + difference + ' minute' + (difference === 1 ? '' : 's') + ' left at this price');
+    } else if (sale_ends.isBefore(a_day)) {
       difference = sale_ends.diff(moment(), 'hours');
       this.set('timeleft', 'only ' + difference + ' hour' + (difference === 1 ? '' : 's') + ' left at this price');
     } else if (sale_ends.isBefore(two_weeks)) {
@@ -54,6 +58,7 @@ Ticket = Backbone.Model.extend({
     } else {
       this.set('timeleft', 'until ' + sale_ends.format('MMMM Do YYYY'));
     }
+    console.log(this.get('timeleft'));
     if (options.raceDayTicket != null) {
       this.set('raceDayTicket', moment(options.raceDayTicket.get('sales_end')).isSame(moment(attributes.sales_end), 'day'));
     }

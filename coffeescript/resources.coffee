@@ -52,14 +52,20 @@ Ticket = Backbone.Model.extend
 		sale_ends = moment(attributes.sales_end)
 		two_weeks = moment().add 2, 'weeks'
 		a_day = moment().add 24, 'hours'
+		an_hour = moment().add 60, 'minutes'
 
-		if sale_ends.isBefore a_day
+		if sale_ends.isBefore an_hour
+			difference = sale_ends.diff(moment(), 'minutes')
+			@set 'timeleft', 'only ' + difference + ' minute' + ( if difference is 1 then '' else 's' ) + ' left at this price'
+		else if sale_ends.isBefore a_day
 			difference = sale_ends.diff(moment(), 'hours')
 			@set 'timeleft', 'only ' + difference + ' hour' + ( if difference is 1 then '' else 's' ) + ' left at this price'
 		else if sale_ends.isBefore two_weeks
 			@set 'timeleft', 'only ' + sale_ends.diff(moment(), 'days') + ' days left at this price'
 		else
 			@set 'timeleft', 'until ' + sale_ends.format 'MMMM Do YYYY'
+
+		console.log @get 'timeleft'
 
 		@set 'raceDayTicket', moment(options.raceDayTicket.get('sales_end')).isSame(moment(attributes.sales_end), 'day') if options.raceDayTicket?
 
