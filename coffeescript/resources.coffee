@@ -65,8 +65,6 @@ Ticket = Backbone.Model.extend
 		else
 			@set 'timeleft', 'until ' + sale_ends.format 'MMMM Do YYYY'
 
-		console.log @get 'timeleft'
-
 		@set 'raceDayTicket', moment(options.raceDayTicket.get('sales_end')).isSame(moment(attributes.sales_end), 'day') if options.raceDayTicket?
 
 		# Sort - the end date is most important, the length is least important, only needs to be relative

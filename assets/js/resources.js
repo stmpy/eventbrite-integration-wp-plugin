@@ -58,7 +58,6 @@ Ticket = Backbone.Model.extend({
     } else {
       this.set('timeleft', 'until ' + sale_ends.format('MMMM Do YYYY'));
     }
-    console.log(this.get('timeleft'));
     if (options.raceDayTicket != null) {
       this.set('raceDayTicket', moment(options.raceDayTicket.get('sales_end')).isSame(moment(attributes.sales_end), 'day'));
     }
