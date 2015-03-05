@@ -81,7 +81,7 @@ EventApp.displayTickets = (ev) ->
 		EventApp.$(e).html (new TicketsView
 			collection: ev.get('tickets')
 			template: (attributes) ->
-				Handlebars.compile(EventApp.$(e).html())(attributes) + '<br />'
+				Handlebars.compile(EventApp.$(e).html())(_.extend(attributes, { event: ev.toJSON() })) + '<br />'
 		).render().el
 
 EventApp.displayWhenWhere = (ev) ->

@@ -18,7 +18,10 @@ Event = Backbone.Model.extend
 
 		# Set Active Tickets
 		tickets = new Tickets _.filter( allTickets, (ticket) ->
-			moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') or moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day')
+			not ticket.hidden and (
+				moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') or
+				moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day')
+			)
 		), { raceDayTicket: raceDayTicket }
 
 		@set 'tickets', tickets

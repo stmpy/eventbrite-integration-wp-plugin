@@ -124,7 +124,9 @@ EventApp.displayTickets = function(ev) {
     return EventApp.$(e).html((new TicketsView({
       collection: ev.get('tickets'),
       template: function(attributes) {
-        return Handlebars.compile(EventApp.$(e).html())(attributes) + '<br />';
+        return Handlebars.compile(EventApp.$(e).html())(_.extend(attributes, {
+          event: ev.toJSON()
+        })) + '<br />';
       }
     })).render().el);
   });

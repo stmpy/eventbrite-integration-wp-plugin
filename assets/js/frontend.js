@@ -11,7 +11,7 @@ Event = Backbone.Model.extend({
       return new Date(ticket.sales_end);
     }));
     tickets = new Tickets(_.filter(allTickets, function(ticket) {
-      return moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') || moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day');
+      return !ticket.hidden && (moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') || moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day'));
     }), {
       raceDayTicket: raceDayTicket
     });
@@ -450,7 +450,9 @@ EventApp.displayTickets = function(ev) {
     return EventApp.$(e).html((new TicketsView({
       collection: ev.get('tickets'),
       template: function(attributes) {
-        return Handlebars.compile(EventApp.$(e).html())(attributes) + '<br />';
+        return Handlebars.compile(EventApp.$(e).html())(_.extend(attributes, {
+          event: ev.toJSON()
+        })) + '<br />';
       }
     })).render().el);
   });
