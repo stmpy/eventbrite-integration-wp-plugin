@@ -432,6 +432,40 @@ function eventbrite_has_active_connection() {
 	return ( Eventbrite_Requirements::has_active_connection() );
 }
 
+function available_races_dd( $form ) {
+	// var_dump($form);
+	foreach ( $form['fields'] as &$field ) {
+		if ( $field->type != 'select' || strpos( $field->cssClass, 'available-states' ) === false ) { continue; }
+
+		$events = new Eventbrite_Query( apply_filters( 'eventbrite_query_args', array(
+			'display_private' => true, // boolean
+		)));
+
+		$choices = array();
+
+		foreach ( $events->posts as $post ) {
+			// var_dump($post);
+			$choices[] = array(
+				'value' => $post->ID,
+				'text' => isset($post->venue) && isset($post->venue->address) ?
+					$post->venue->address->region . ' - ' . $post->venue->address->city :
+					$post->post_title
+			);
+		}
+
+		var_dump( usort( $choices, function( $a, $b ) {
+			if ( $a['text'] == $b['text'] ) { return 0; }
+			return ( $a['text'] < $b['text'] ) ? -1 : 1;
+		}));
+
+		$field->placeholder = 'Choose Your Race';
+		$field->choices = $choices;
+	}
+
+	return $form;
+}
+add_filter('gform_pre_render', 'available_races_dd');
+
 function add_query_vars($aVars) {
 	$aVars[] = get_option('evi_event_id_variable', 'event_id');
 	return $aVars;

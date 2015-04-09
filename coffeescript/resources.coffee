@@ -50,7 +50,7 @@ Ticket = Backbone.Model.extend
 		if attributes.free
 			@set 'price', 'Free'
 		else
-			@set 'price', attributes.cost.display
+			@set 'price', ( if attributes.cost? then attributes.cost.display else 'TBD' )
 
 		sale_ends = moment(attributes.sales_end)
 		two_weeks = moment().add 2, 'weeks'

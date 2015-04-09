@@ -155,7 +155,7 @@ class Eventbrite_Query extends WP_Query {
 			$this->post = reset( $this->posts );
 		}
 
-		$this->max_num_pages = ceil( $this->found_posts / $this->found_posts ); // kwight: support posts_per_page
+		$this->max_num_pages = 1; // ceil( $this->found_posts / $this->found_posts ); // kwight: support posts_per_page
 
 		// Adjust some WP_Query parsing.
 		if ( ! empty( $this->query_vars['p'] ) ) {

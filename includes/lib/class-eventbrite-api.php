@@ -150,7 +150,11 @@ class Eventbrite_API extends Keyring_Service_Eventbrite {
 			foreach($response->get_error_codes() as $code) {
 				echo "<h4>" . $code . "</h4>";
 				foreach($response->get_error_messages($code) as $error) {
-					print_r($error['body']);
+					if (gettype($error) == 'WP_Error') {
+						print_r($error);
+					} else {
+						print_r($error['body']);
+					}
 				}
 			}
 			echo "</pre>";

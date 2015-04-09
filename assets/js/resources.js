@@ -41,7 +41,7 @@ Ticket = Backbone.Model.extend({
     if (attributes.free) {
       this.set('price', 'Free');
     } else {
-      this.set('price', attributes.cost.display);
+      this.set('price', (attributes.cost != null ? attributes.cost.display : 'TBD'));
     }
     sale_ends = moment(attributes.sales_end);
     two_weeks = moment().add(2, 'weeks');
