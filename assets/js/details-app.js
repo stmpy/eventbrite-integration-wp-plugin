@@ -104,7 +104,7 @@ EventApp.displayLinks = function(ev) {
         }, {
           url: 'https://www.eventbrite.com/mytickets/',
           icon_name: 'icomoon-cog',
-          text: 'Manage your team'
+          text: 'Manage your orders'
         }
       ]),
       template: function(attributes) {

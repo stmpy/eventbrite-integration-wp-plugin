@@ -67,7 +67,7 @@ EventApp.displayLinks = (ev) ->
 			,
 				url: 'https://www.eventbrite.com/mytickets/'
 				icon_name: 'icomoon-cog'
-				text: 'Manage your team'
+				text: 'Manage your orders'
 			]
 			template: (attributes) ->
 				Handlebars.compile(EventApp.$(e).html())(attributes) + '<br />'
