@@ -453,10 +453,10 @@ function available_races_dd( $form ) {
 			);
 		}
 
-		var_dump( usort( $choices, function( $a, $b ) {
+		usort( $choices, function( $a, $b ) {
 			if ( $a['text'] == $b['text'] ) { return 0; }
 			return ( $a['text'] < $b['text'] ) ? -1 : 1;
-		}));
+		});
 
 		$field->placeholder = 'Choose Your Race';
 		$field->choices = $choices;
