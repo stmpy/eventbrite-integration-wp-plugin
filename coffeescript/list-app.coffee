@@ -171,7 +171,7 @@ EventListApp.addInitializer (options) ->
 
 	# filter out events that do not match the organizer id
 	@events_raw = _.filter options.events, (ev) ->
-		return ev.organizer.id == options.evi_organizer_id
+		return ev.organizer.id == options.evi_organizer_id and not ev.post_title.match(/cancel/i)
 
 	evs = new Events @events_raw, EventListApp.ops
 

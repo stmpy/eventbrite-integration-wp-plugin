@@ -259,7 +259,7 @@ EventListApp.addInitializer(function(options) {
   }
   this.addRegions(r);
   this.events_raw = _.filter(options.events, function(ev) {
-    return ev.organizer.id === options.evi_organizer_id;
+    return ev.organizer.id === options.evi_organizer_id && !ev.post_title.match(/cancel/i);
   });
   evs = new Events(this.events_raw, EventListApp.ops);
   this.events = {
