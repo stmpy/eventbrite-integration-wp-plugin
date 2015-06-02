@@ -54,7 +54,7 @@ CategoryLayout = Marionette.LayoutView.extend
 		self = this
 		_.each @getOption('categories'), (group,category) ->
 			self.$el.append "<div class='vc_row-fluid'><div class='vc_span12 col'><h4 class='eventbrite-category-title'>" + category + "</h4></div></div>", (new ColumnLayout column_count: 3, columns: _.groupBy group, (event,i) ->
-					(parseInt (i % 3) + 1)
+					parseInt(i / Math.ceil(group.length / 3))
 				).render().el
 
 MapLayout = Marionette.LayoutView.extend

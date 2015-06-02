@@ -2,19 +2,27 @@ var Event, Events, Ticket, Tickets;
 
 Event = Backbone.Model.extend({
   initialize: function(attributes, options) {
-    var allTickets, expr, mEnd, mStart, match, metro, raceDayTicket, start, tickets;
+    var allTickets, expr, mEnd, mStart, match, metro, raceDayTicket, radPack, start, tickets;
     if (options.evi_event_detail_page != null) {
       this.set('local_url', '/' + options.evi_event_detail_page + '/?' + options.evi_event_id_variable + '=' + this.get('ID'));
     }
-    allTickets = this.get('tickets');
-    raceDayTicket = new Ticket(_.max(allTickets, function(ticket) {
+    allTickets = _.filter(this.get('tickets'), function(ticket) {
+      return !ticket.hidden;
+    });
+    radPack = _.max(allTickets, function(ticket) {
+      return new Date(ticket.sales_end) - new Date(ticket.sales_start);
+    });
+    raceDayTicket = new Ticket(_.max(_.filter(allTickets, function(ticket) {
+      return ticket.id !== radPack.id;
+    }), function(ticket) {
       return new Date(ticket.sales_end);
     }));
     tickets = new Tickets(_.filter(allTickets, function(ticket) {
-      return !ticket.hidden && (moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') || moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day'));
-    }), {
-      raceDayTicket: raceDayTicket
-    });
+      return moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') || moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day');
+    }, {
+      raceDayTicket: raceDayTicket,
+      radPack: radPack
+    }));
     this.set('tickets', tickets);
     this.set('soldout', tickets.some(function(ticket) {
       return ticket.get('quantity_sold') >= ticket.get('quantity_total');
@@ -126,7 +134,7 @@ CategoryLayout = Marionette.LayoutView.extend({
       return self.$el.append("<div class='vc_row-fluid'><div class='vc_span12 col'><h4 class='eventbrite-category-title'>" + category + "</h4></div></div>", (new ColumnLayout({
         column_count: 3,
         columns: _.groupBy(group, function(event, i) {
-          return parseInt((i % 3) + 1);
+          return parseInt(i / Math.ceil(group.length / 3));
         })
       })).render().el);
     });

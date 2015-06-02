@@ -60,6 +60,12 @@ class Eventbrite_Integration_Settings {
 	 */
 	public function init_settings () {
 		$this->settings = $this->settings_fields();
+
+		// check if reset cache is set ... if so reset and then change it to false
+		if ( ! empty( get_option( 'evi_clear_cache', '' ) ) ) {
+			clear_transients();
+			update_option( 'evi_clear_cache', '');
+		}
 	}
 
 	/**
@@ -172,6 +178,13 @@ class Eventbrite_Integration_Settings {
 					'type' 			=> 'text',
 					'default'		=> '',
 					'placeholder'	=> __( '', 'eventbrite-integration' ),
+				),
+				array(
+					'id' 			=> 'clear_cache',
+					'label'			=> __( 'Clear Eventbrite Cache', 'eventbrite-integration' ),
+					'description'	=> __( 'Check this box and save to clear the eventbrite events cache.', 'eventbrite-integration' ),
+					'type'			=> 'checkbox',
+					'default'		=> ''
 				),
 			)
 		);

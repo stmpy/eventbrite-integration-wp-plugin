@@ -471,3 +471,16 @@ function add_query_vars($aVars) {
 	return $aVars;
 }
 add_filter('query_vars','add_query_vars');
+
+function clear_transients()
+{
+	global $wpdb;
+
+	$wpdb->query(
+		$wpdb->prepare(
+			"DELETE FROM $wpdb->options
+			  WHERE `option_name` LIKE %s",
+			'_transient_%eventbrite%'
+		)
+	);
+}

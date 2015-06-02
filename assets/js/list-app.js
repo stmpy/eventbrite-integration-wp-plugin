@@ -50,7 +50,7 @@ CategoryLayout = Marionette.LayoutView.extend({
       return self.$el.append("<div class='vc_row-fluid'><div class='vc_span12 col'><h4 class='eventbrite-category-title'>" + category + "</h4></div></div>", (new ColumnLayout({
         column_count: 3,
         columns: _.groupBy(group, function(event, i) {
-          return parseInt((i % 3) + 1);
+          return parseInt(i / Math.ceil(group.length / 3));
         })
       })).render().el);
     });

@@ -12,17 +12,20 @@ Event = Backbone.Model.extend
 		# Set Local URL, WP event page
 		@set('local_url', '/' + options.evi_event_detail_page + '/?' + options.evi_event_id_variable + '=' + @get 'ID') if options.evi_event_detail_page?
 
-		allTickets = @get('tickets')
-		# Set Race Day Ticket
-		raceDayTicket = new Ticket _.max allTickets, (ticket) -> new Date(ticket.sales_end)
+		# filter tickets and remove hidden ones first
+		allTickets = _.filter @get('tickets'), (ticket) -> not ticket.hidden
+
+		# rad pack
+		radPack = _.max allTickets, (ticket) -> new Date(ticket.sales_end) - new Date(ticket.sales_start)
+
+		# Set Race Day Ticket - don't include the rad pack in this search
+		raceDayTicket = new Ticket _.max _.filter(allTickets, (ticket) -> ticket.id isnt radPack.id), (ticket) -> new Date(ticket.sales_end)
 
 		# Set Active Tickets
-		tickets = new Tickets _.filter( allTickets, (ticket) ->
-			not ticket.hidden and (
-				moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') or
-				moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day')
-			)
-		), { raceDayTicket: raceDayTicket }
+		tickets = new Tickets _.filter allTickets, (ticket) ->
+			moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') or
+			moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day')
+		, { raceDayTicket: raceDayTicket, radPack: radPack }
 
 		@set 'tickets', tickets
 
