@@ -19,13 +19,13 @@ Event = Backbone.Model.extend
 		radPack = _.max allTickets, (ticket) -> new Date(ticket.sales_end) - new Date(ticket.sales_start)
 
 		# Set Race Day Ticket - don't include the rad pack in this search
-		raceDayTicket = new Ticket _.max _.filter(allTickets, (ticket) -> ticket.id isnt radPack.id), (ticket) -> new Date(ticket.sales_end)
+		raceDayTicket = _.max _.filter(allTickets, (ticket) -> ticket.id isnt radPack.id), (ticket) -> new Date(ticket.sales_end)
 
 		# Set Active Tickets
-		tickets = new Tickets _.filter allTickets, (ticket) ->
+		tickets = new Tickets (_.filter allTickets, (ticket) ->
 			moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') or
-			moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day')
-		, { raceDayTicket: raceDayTicket, radPack: radPack }
+			moment(ticket.sales_end).isSame(moment(raceDayTicket.sales_end), 'day')
+		), { raceDayTicket: raceDayTicket, radPack: radPack }
 
 		@set 'tickets', tickets
 
@@ -71,7 +71,7 @@ Ticket = Backbone.Model.extend
 		else
 			@set 'timeleft', 'until ' + sale_ends.format 'MMMM Do YYYY'
 
-		@set 'raceDayTicket', moment(options.raceDayTicket.get('sales_end')).isSame(moment(attributes.sales_end), 'day') if options.raceDayTicket?
+		@set 'raceDayTicket', moment(options.raceDayTicket.sales_end).isSame(moment(attributes.sales_end), 'day') if options.raceDayTicket?
 
 		# Sort - the end date is most important, the length is least important, only needs to be relative
 		@set 'sort', parseInt(moment(attributes.sales_end).diff(moment(attributes.sales_start))) / 10000 + (parseInt(moment(attributes.sales_end).format("X")) * 10)

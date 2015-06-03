@@ -12,17 +12,17 @@ Event = Backbone.Model.extend({
     radPack = _.max(allTickets, function(ticket) {
       return new Date(ticket.sales_end) - new Date(ticket.sales_start);
     });
-    raceDayTicket = new Ticket(_.max(_.filter(allTickets, function(ticket) {
+    raceDayTicket = _.max(_.filter(allTickets, function(ticket) {
       return ticket.id !== radPack.id;
     }), function(ticket) {
       return new Date(ticket.sales_end);
-    }));
+    });
     tickets = new Tickets(_.filter(allTickets, function(ticket) {
-      return moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') || moment(ticket.sales_end).isSame(moment(raceDayTicket.get('sales_end')), 'day');
-    }, {
+      return moment().isBetween(moment(ticket.sales_start), moment(ticket.sales_end), 'minute') || moment(ticket.sales_end).isSame(moment(raceDayTicket.sales_end), 'day');
+    }), {
       raceDayTicket: raceDayTicket,
       radPack: radPack
-    }));
+    });
     this.set('tickets', tickets);
     this.set('soldout', tickets.some(function(ticket) {
       return ticket.get('quantity_sold') >= ticket.get('quantity_total');
@@ -67,7 +67,7 @@ Ticket = Backbone.Model.extend({
       this.set('timeleft', 'until ' + sale_ends.format('MMMM Do YYYY'));
     }
     if (options.raceDayTicket != null) {
-      this.set('raceDayTicket', moment(options.raceDayTicket.get('sales_end')).isSame(moment(attributes.sales_end), 'day'));
+      this.set('raceDayTicket', moment(options.raceDayTicket.sales_end).isSame(moment(attributes.sales_end), 'day'));
     }
     return this.set('sort', parseInt(moment(attributes.sales_end).diff(moment(attributes.sales_start))) / 10000 + (parseInt(moment(attributes.sales_end).format("X")) * 10));
   }
