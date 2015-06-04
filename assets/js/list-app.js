@@ -14,7 +14,7 @@ EventView = Marionette.ItemView.extend({
 });
 
 ThirdColumnView = Marionette.CollectionView.extend({
-  className: 'vc_span4 wpb_column column_container col no-extra-padding',
+  className: 'vc_col-sm-4 wpb_column column_container col no-extra-padding',
   childView: EventView
 });
 
