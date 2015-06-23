@@ -64,6 +64,7 @@ class Eventbrite_API extends Keyring_Service_Eventbrite {
 		$this->set_endpoint( 'user_owned_events', self::API_BASE . 'users/' . $token->get_meta( 'user_id' ) . '/owned_events', 'GET' );
 		$this->set_endpoint( 'event_details', self::API_BASE . 'events/', 'GET' );
 		$this->set_endpoint( 'event_search', self::API_BASE . 'events/search/', 'GET' );
+		$this->set_endpoint( 'event_tickets', self::API_BASE . 'events/{event_id}/ticket_classes', 'GET' );
 	}
 
 	/**
@@ -84,6 +85,15 @@ class Eventbrite_API extends Keyring_Service_Eventbrite {
 		$endpoint_url = self::$instance->{$endpoint . '_url'};
 		$method = self::$instance->{$endpoint . '_method'};
 		$params = array( 'method' => $method );
+
+		// parse endpoint_url w/ query_params
+		foreach ($query_params as $key => $value) {
+			if(stripos($endpoint_url, '{' . $key . '}'))
+			{
+				$endpoint_url = preg_replace('/\{' . $key . '\}/', $value, $endpoint_url);
+				unset($query_params[$key]);
+			}
+		}
 
 		if ( ! empty( $object_id ) && is_numeric( $object_id ) ) {
 			$endpoint_url = trailingslashit( $endpoint_url ) . absint( $object_id );
@@ -145,7 +155,6 @@ class Eventbrite_API extends Keyring_Service_Eventbrite {
 			echo "<h3>Endpoint: " . $endpoint_url . "</h3>";
 			if(isset($_SERVER['HTTP_REFERER'])) { echo "<h4>referrer: " . $_SERVER['HTTP_REFERER'] . '</h4>'; }
 			if(isset($_SERVER['HTTP_USER_AGENT'])) { echo "<h4>user agent: " . $_SERVER['HTTP_USER_AGENT'] . '</h4>'; }
-			var_dump($query_params);
 			echo "<h3>Errors</h3>";
 			foreach($response->get_error_codes() as $code) {
 				echo "<h4>" . $code . "</h4>";

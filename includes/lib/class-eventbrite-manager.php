@@ -162,6 +162,9 @@ class Eventbrite_Manager {
 			$params['status'] = 'live';
 		}
 
+		// include "expansions"
+		$params['expand'] = 'venue,organizer';
+
 		// Get the raw results.
 		$results = $this->request( 'user_owned_events', $params, false, $force );
 
@@ -189,13 +192,15 @@ class Eventbrite_Manager {
 		}
 
 		// Get the raw results. Although query parameters aren't needed for the API call, they're necessary for identifying transients.
-		$results = $this->request( 'event_details', array( 'p' => absint( $id ) ), absint( $id ), $force );
+		$results = $this->request( 'event_details', array( 'expand' => 'venue,organizer' ), absint( $id ), $force );
 
 		// If we have our event, map it to the format expected by Eventbrite_Event, and create pagination info.
 		if ( empty( $results->error ) ) {
+			$tickets = $this->request( 'event_tickets', array( 'event_id' => $results->id ), false, $force );
+
 			$results = (object) array(
 				'events' => array(
-					$this->map_event_keys( $results ),
+					$this->map_event_keys( $results, $tickets ),
 				),
 				'pagination' => (object) array(
 					'object_count' => 1,
@@ -306,7 +311,7 @@ class Eventbrite_Manager {
 			// http://developer.eventbrite.com/docs/event-details/
 			'event_details' => array(
 				// Not a true param for this endpoint; the ID gets passed as its own argument in the API call.
-				'p' => array(),
+				'expand' => array(),
 			),
 			// http://developer.eventbrite.com/docs/user-owned-events/
 			'user_owned_events' => array(
@@ -324,6 +329,10 @@ class Eventbrite_Manager {
 					'created_asc',
 					'created_desc',
 				),
+				'expand'				=> array(),
+			),
+			'event_tickets'				=> array(
+				'event_id' 			=> array(),
 			),
 		);
 
@@ -338,22 +347,24 @@ class Eventbrite_Manager {
 	 * @param object $api_event A single event from the API results.
 	 * @return object Event with Eventbrite_Event keys.
 	 */
-	protected function map_event_keys( $api_event ) {
+	protected function map_event_keys( $api_event, $tickets ) {
 		$event = array();
 
-		$event['ID']            = ( isset( $api_event->id ) )                ? $api_event->id                : '';
-		$event['post_title']    = ( isset( $api_event->name->text ) )        ? $api_event->name->text        : '';
-		$event['post_content']  = ( isset( $api_event->description->html ) ) ? $api_event->description->html : '';
-		$event['post_date']     = ( isset( $api_event->start->local ) )      ? $api_event->start->local      : '';
-		$event['post_date_gmt'] = ( isset( $api_event->start->utc ) )        ? $api_event->start->utc        : '';
-		$event['url']           = ( isset( $api_event->url ) )               ? $api_event->url               : '';
-		$event['logo_url']      = ( isset( $api_event->logo_url ) )          ? $api_event->logo_url          : '';
-		$event['start']         = ( isset( $api_event->start ) )             ? $api_event->start             : '';
-		$event['end']           = ( isset( $api_event->end ) )               ? $api_event->end               : '';
-		$event['organizer']     = ( isset( $api_event->organizer ) )         ? $api_event->organizer         : '';
-		$event['venue']         = ( isset( $api_event->venue ) )             ? $api_event->venue             : '';
-		$event['public']        = ( isset( $api_event->listed ) )            ? $api_event->listed            : '';
-		$event['tickets']       = ( isset( $api_event->ticket_classes ) )    ? $api_event->ticket_classes    : '';
+		$event = array(
+			'ID'            => ( isset( $api_event->id ) )                ? $api_event->id                : '',
+			'post_title'    => ( isset( $api_event->name->text ) )        ? $api_event->name->text        : '',
+			'post_content'  => ( isset( $api_event->description->html ) ) ? $api_event->description->html : '',
+			'post_date'     => ( isset( $api_event->start->local ) )      ? $api_event->start->local      : '',
+			'post_date_gmt' => ( isset( $api_event->start->utc ) )        ? $api_event->start->utc        : '',
+			'url'           => ( isset( $api_event->url ) )               ? $api_event->url               : '',
+			'logo_url'      => ( isset( $api_event->logo_url ) )          ? $api_event->logo_url          : '',
+			'start'         => ( isset( $api_event->start ) )             ? $api_event->start             : '',
+			'end'           => ( isset( $api_event->end ) )               ? $api_event->end               : '',
+			'organizer'     => ( isset( $api_event->organizer ) )         ? $api_event->organizer         : '',
+			'venue'         => ( isset( $api_event->venue ) )             ? $api_event->venue             : null,
+			'public'        => ( isset( $api_event->listed ) )            ? $api_event->listed            : '',
+			'tickets'       => ( isset( $tickets->ticket_classes ) )      ? $tickets->ticket_classes      : null,
+		);
 
 		return (object) $event;
 	}
