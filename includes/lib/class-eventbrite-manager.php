@@ -52,7 +52,7 @@ class Eventbrite_Manager {
 		}
 
 		// Return a cached result if we have one.
-		$cached = $this->get_cache( $endpoint, $params );
+		$cached = $this->get_cache( $endpoint . $id, $params );
 		if ( ! $force && $cached !== false ) {
 			return $cached;
 		}
