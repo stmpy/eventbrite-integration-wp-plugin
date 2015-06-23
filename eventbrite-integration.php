@@ -35,7 +35,7 @@ require_once( 'includes/lib/class-eventbrite-integration-taxonomy.php' );
  * @return object Eventbrite_Integration
  */
 function Eventbrite_Integration () {
-	$instance = Eventbrite_Integration::instance( __FILE__, '1.2.1' );
+	$instance = Eventbrite_Integration::instance( __FILE__, '1.3.0' );
 
 	if ( is_null( $instance->settings ) ) {
 		$instance->settings = Eventbrite_Integration_Settings::instance( $instance );

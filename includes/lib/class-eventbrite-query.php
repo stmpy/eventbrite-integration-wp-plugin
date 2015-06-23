@@ -98,14 +98,19 @@ class Eventbrite_Query extends WP_Query {
 			$this->api_results = eventbrite()->do_event_search( $params );
 		}
 
-		// Do any post-API query processing.
-		$this->post_api_filters();
+		if ( $this->api_results )
+		{
+			// Do any post-API query processing.
+			$this->post_api_filters();
 
-		// Set properties based on the results.
-		$this->set_properties();
+			// Set properties based on the results.
+			$this->set_properties();
 
-		// Return what we have for posts.
-		return $this->posts;
+			// Return what we have for posts.
+			return $this->posts;
+		}
+
+		return false;
 	}
 
 	/**

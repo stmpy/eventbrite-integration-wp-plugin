@@ -171,7 +171,7 @@ EventListApp.addInitializer (options) ->
 
 	# filter out events that do not match the organizer id
 	@events_raw = _.filter options.events, (ev) ->
-		return ev.organizer.id == options.evi_organizer_id and not ev.post_title.match(/cancel/i)
+		return ev.organizer.id is options.evi_organizer_id and not ev.post_title.match(/cancel/i)
 
 	evs = new Events @events_raw, EventListApp.ops
 
@@ -192,6 +192,7 @@ EventListApp.addInitializer (options) ->
 
 	grouped_byDate = @events['byDate'].groupBy (ev,i) ->
 		moment(ev.get('start').local).format("MMMM YYYY")
+
 	@upcoming.show new CategoryLayout categories: grouped_byDate if @upcoming
 
 	grouped_byCity = @events['byCity'].groupBy (ev,i) ->
