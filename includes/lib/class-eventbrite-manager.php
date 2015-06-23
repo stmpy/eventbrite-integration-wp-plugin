@@ -347,7 +347,7 @@ class Eventbrite_Manager {
 	 * @param object $api_event A single event from the API results.
 	 * @return object Event with Eventbrite_Event keys.
 	 */
-	protected function map_event_keys( $api_event, $tickets ) {
+	protected function map_event_keys( $api_event, $tickets = null ) {
 		$event = array();
 
 		$event = array(
@@ -363,7 +363,7 @@ class Eventbrite_Manager {
 			'organizer'     => ( isset( $api_event->organizer ) )         ? $api_event->organizer         : '',
 			'venue'         => ( isset( $api_event->venue ) )             ? $api_event->venue             : null,
 			'public'        => ( isset( $api_event->listed ) )            ? $api_event->listed            : '',
-			'tickets'       => ( isset( $tickets->ticket_classes ) )      ? $tickets->ticket_classes      : null,
+			'tickets'       => ( isset( $tickets ) && isset( $tickets->ticket_classes ) )      ? $tickets->ticket_classes      : null,
 		);
 
 		return (object) $event;
