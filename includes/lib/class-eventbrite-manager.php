@@ -192,7 +192,7 @@ class Eventbrite_Manager {
 		}
 
 		// Get the raw results. Although query parameters aren't needed for the API call, they're necessary for identifying transients.
-		$results = $this->request( 'event_details', array( 'expand' => 'venue,organizer,ticket_class' ), absint( $id ), $force );
+		$results = $this->request( 'event_details', array( 'expand' => 'venue,organizer,ticket_classes' ), absint( $id ), $force );
 
 		// If we have our event, map it to the format expected by Eventbrite_Event, and create pagination info.
 		if ( empty( $results->error ) ) {
