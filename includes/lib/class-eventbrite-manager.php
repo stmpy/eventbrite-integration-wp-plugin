@@ -163,7 +163,7 @@ class Eventbrite_Manager {
 		}
 
 		// include "expansions"
-		$params['expand'] = 'venue,organizer';
+		$params['expand'] = 'venue,organizer,ticket_classes';
 
 		// Get the raw results.
 		$results = $this->request( 'user_owned_events', $params, false, $force );
@@ -192,15 +192,14 @@ class Eventbrite_Manager {
 		}
 
 		// Get the raw results. Although query parameters aren't needed for the API call, they're necessary for identifying transients.
-		$results = $this->request( 'event_details', array( 'expand' => 'venue,organizer' ), absint( $id ), $force );
+		$results = $this->request( 'event_details', array( 'expand' => 'venue,organizer,ticket_class' ), absint( $id ), $force );
 
 		// If we have our event, map it to the format expected by Eventbrite_Event, and create pagination info.
 		if ( empty( $results->error ) ) {
-			$tickets = $this->request( 'event_tickets', array( 'event_id' => $results->id ), false, $force );
 
 			$results = (object) array(
 				'events' => array(
-					$this->map_event_keys( $results, $tickets ),
+					$this->map_event_keys( $results ),
 				),
 				'pagination' => (object) array(
 					'object_count' => 1,
@@ -347,7 +346,7 @@ class Eventbrite_Manager {
 	 * @param object $api_event A single event from the API results.
 	 * @return object Event with Eventbrite_Event keys.
 	 */
-	protected function map_event_keys( $api_event, $tickets = null ) {
+	protected function map_event_keys( $api_event ) {
 		$event = array();
 
 		$event = array(
@@ -363,7 +362,7 @@ class Eventbrite_Manager {
 			'organizer'     => ( isset( $api_event->organizer ) )         ? $api_event->organizer         : '',
 			'venue'         => ( isset( $api_event->venue ) )             ? $api_event->venue             : null,
 			'public'        => ( isset( $api_event->listed ) )            ? $api_event->listed            : '',
-			'tickets'       => ( isset( $tickets ) && isset( $tickets->ticket_classes ) )      ? $tickets->ticket_classes      : null,
+			'tickets'       => ( isset( $api_event->ticket_classes ) )    ? $api_event->ticket_classes    : null,
 		);
 
 		return (object) $event;
