@@ -53,6 +53,8 @@
 			'meta_value' => 'eventbrite-index.php',
 		));
 
+		$eb_rules['run/(.+)/?$'] = 'index.php?pagename=' . get_option( 'evi_event_detail_page' ) . '&' . get_option( 'evi_event_metro_variable' ) . '=$matches[1]';
+
 		// If any pages are using the template, add rewrite rules for each of them.
 		if ( $pages ) {
 			foreach ( $pages as $page ) {

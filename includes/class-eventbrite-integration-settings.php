@@ -164,12 +164,28 @@ class Eventbrite_Integration_Settings {
 					'placeholder'	=> __( 'Event Detail Page', 'eventbrite-integration' )
 				),
 				array(
+					'id' 			=> 'event_seo_url',
+					'label'			=> __( 'Event SEO URL' , 'eventbrite-integration' ),
+					'description'	=> __( 'The slug to use for SEO purposes', 'eventbrite-integration' ),
+					'type'			=> 'text',
+					'default'		=> 'run',
+					'placeholder'	=> __( 'Event SEO URL', 'eventbrite-integration' )
+				),
+				array(
 					'id' 			=> 'event_id_variable',
 					'label'			=> __( 'Event ID Variable' , 'eventbrite-integration' ),
 					'description'	=> __( 'The variable name to use when viewing event details', 'eventbrite-integration' ),
 					'type'			=> 'text',
 					'default'		=> 'event_id',
 					'placeholder'	=> __( 'Event ID Variable', 'eventbrite-integration' )
+				),
+				array(
+					'id' 			=> 'event_metro_variable',
+					'label'			=> __( 'Event Metro Variable' , 'eventbrite-integration' ),
+					'description'	=> __( 'The variable name to use when viewing event details by metro', 'eventbrite-integration' ),
+					'type'			=> 'text',
+					'default'		=> 'event_metro',
+					'placeholder'	=> __( 'Event Metro Variable', 'eventbrite-integration' )
 				),
 				array(
 					'id' 			=> 'event_metro_regex',

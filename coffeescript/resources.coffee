@@ -9,8 +9,14 @@
 
 Event = Backbone.Model.extend
 	initialize: (attributes, options) ->
+		# Set Metro
+		expr = new RegExp(options.evi_event_metro_regex);
+		match = @get('post_title').match(expr)
+		metro = ( if match? and match[1]? then match[1] else @get('venue').address.city )
+		@set 'metro', metro
+
 		# Set Local URL, WP event page
-		@set('local_url', '/' + options.evi_event_detail_page + '/?' + options.evi_event_id_variable + '=' + @get 'ID') if options.evi_event_detail_page?
+		@set('local_url', '/' + options.evi_event_seo_url + '/' + @get('metro').toLowerCase().replace(/[^\w]+/, '_') ) if options.evi_event_detail_page?
 
 		# filter tickets and remove hidden ones first
 		allTickets = _.filter @get('tickets'), (ticket) -> not ticket.hidden
@@ -41,12 +47,6 @@ Event = Backbone.Model.extend
 
 		# Set EventBrite URL
 		@set 'url', @get('url').replace('http:','https:')
-
-		# Set Metro
-		expr = new RegExp(options.evi_event_metro_regex);
-		match = @get('post_title').match(expr)
-		metro = ( if match? and match[1]? then match[1] else @get('venue').address.city )
-		@set 'metro', metro
 
 Ticket = Backbone.Model.extend
 	initialize: (attributes, options = {}) ->

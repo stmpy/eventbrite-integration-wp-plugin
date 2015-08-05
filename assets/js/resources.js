@@ -3,8 +3,12 @@ var Event, Events, Ticket, Tickets;
 Event = Backbone.Model.extend({
   initialize: function(attributes, options) {
     var allTickets, expr, mEnd, mStart, match, metro, raceDayTicket, radPack, start, tickets;
+    expr = new RegExp(options.evi_event_metro_regex);
+    match = this.get('post_title').match(expr);
+    metro = ((match != null) && (match[1] != null) ? match[1] : this.get('venue').address.city);
+    this.set('metro', metro);
     if (options.evi_event_detail_page != null) {
-      this.set('local_url', '/' + options.evi_event_detail_page + '/?' + options.evi_event_id_variable + '=' + this.get('ID'));
+      this.set('local_url', '/' + options.evi_event_seo_url + '/' + this.get('metro').toLowerCase().replace(/[^\w]+/, '_'));
     }
     allTickets = _.filter(this.get('tickets'), function(ticket) {
       return !ticket.hidden;
@@ -32,11 +36,7 @@ Event = Backbone.Model.extend({
     mEnd = moment(attributes.end.local);
     start.formatted = mStart.format('dddd, MMMM Do, YYYY') + ' from ' + mStart.format('h:mm a') + ' to ' + mEnd.format('h:mm a zz');
     this.set('start', start);
-    this.set('url', this.get('url').replace('http:', 'https:'));
-    expr = new RegExp(options.evi_event_metro_regex);
-    match = this.get('post_title').match(expr);
-    metro = ((match != null) && (match[1] != null) ? match[1] : this.get('venue').address.city);
-    return this.set('metro', metro);
+    return this.set('url', this.get('url').replace('http:', 'https:'));
   }
 });
 

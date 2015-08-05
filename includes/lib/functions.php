@@ -138,6 +138,11 @@ function eventbrite_is_single( $query = null ) {
 		return true;
 	}
 
+	// If the eventbrite_id query var has something, then it's an event single view.
+	elseif ( get_query_var( get_option('evi_event_metro_variable', 'event_metro') ) ) {
+		return true;
+	}
+
 	// Whatever it is, if anything, it's not an event single view.
 	else {
 		return false;
@@ -468,6 +473,7 @@ add_filter('gform_pre_render', 'available_races_dd');
 
 function add_query_vars($aVars) {
 	$aVars[] = get_option('evi_event_id_variable', 'event_id');
+	$aVars[] = get_option('evi_event_metro_variable', 'event_metro');
 	return $aVars;
 }
 add_filter('query_vars','add_query_vars');
