@@ -8,7 +8,7 @@ Event = Backbone.Model.extend({
     metro = ((match != null) && (match[1] != null) ? match[1] : this.get('venue').address.city);
     this.set('metro', metro);
     if (options.evi_event_detail_page != null) {
-      this.set('local_url', '/' + options.evi_event_seo_url + '/' + this.get('metro').toLowerCase().replace(/[^\w]+/, '_'));
+      this.set('local_url', '/' + options.evi_event_seo_url + '/' + this.get('metro').toLowerCase().replace(/[^\w]+/g, '_'));
     }
     allTickets = _.filter(this.get('tickets'), function(ticket) {
       return !ticket.hidden;

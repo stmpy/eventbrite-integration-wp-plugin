@@ -16,7 +16,7 @@ Event = Backbone.Model.extend
 		@set 'metro', metro
 
 		# Set Local URL, WP event page
-		@set('local_url', '/' + options.evi_event_seo_url + '/' + @get('metro').toLowerCase().replace(/[^\w]+/, '_') ) if options.evi_event_detail_page?
+		@set('local_url', '/' + options.evi_event_seo_url + '/' + @get('metro').toLowerCase().replace(/[^\w]+/g, '_') ) if options.evi_event_detail_page?
 
 		# filter tickets and remove hidden ones first
 		allTickets = _.filter @get('tickets'), (ticket) -> not ticket.hidden
